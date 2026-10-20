@@ -183,7 +183,7 @@ function model(){
   if(ry&&y===ry){const bn=el('rbasis').value==='fwd'&&L[y]?L[y].noi:l.noi,v=vcap?bn/vcap:0,nl=v*(num('rltv')||0)/100,cost=nl*(num('rcost')||0)/100;co=nl-cost-S.bal;
    const ra=num('ramy')||0,rt=el('rtype').value,rr=(num('rrate')||0)/100;if(rt==='am'&&!ra)warn.push('Refi amortization blank: refi loan modeled as interest-only.');
    refi={y,val:v,nl,cost,payoff:S.bal,co,rate:rr,pmt:rt==='am'&&ra?PMT(rr,ra,nl):nl*rr};S={bal:nl,r:rr,type:rt==='am'&&ra?'am':'io',io:0,am:ra,k:0,pmt:null}}
-  const cf=l.noi-ds;rows.push({y,yr:start+y-1,...l,ds:-ds,cf,cfm:cf/12,agc:y>1&&L[y-2].agi?l.agi/L[y-2].agi-1:null,dscr:ds?l.noi/ds:null,coc:inv?cf/inv:null,pr:-pr,bal:balY,cfp:cf+pr,tr:inv?(cf+pr)/inv:null,val,equity:val!=null?val-balY:null,ltv:val?balY/val:null,co,tot:cf+(co||0),toc:inv?(cf+(co||0))/inv:null,
+  const cf=l.noi-ds;rows.push({y,yr:start+y-1,...l,ds:-ds,cf,cfm:cf/12,agc:y>1&&L[y-2].gi?l.gi/L[y-2].gi-1:null,dscr:ds?l.noi/ds:null,coc:inv?cf/inv:null,pr:-pr,bal:balY,cfp:cf+pr,tr:inv?(cf+pr)/inv:null,val,equity:val!=null?val-balY:null,ltv:val?balY/val:null,co,tot:cf+(co||0),toc:inv?(cf+(co||0))/inv:null,
    net:cf,noi:l.noi,dsP:ds,prP:pr})}
  const ioP=loan0*rate,amP=amy?(dt==='mx'?PMT(num('rate2')!=null?num('rate2')/100:rate,amy,loan0):PMT(rate,amy,loan0)):null;
  const dep=price*(num('impr')??0)/100,life=num('life')||0;
@@ -192,7 +192,7 @@ function card(l,v,s,c){return `<div class="card"><div class="l">${l}</div><div c
 function table(id,head,rows,foot){el(id).innerHTML='<table><thead><tr>'+head.map((x,i)=>`<th${i?'':' class="t"'}>${x}</th>`).join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr'+(r.cls?` class="${r.cls}"`:'')+'>'+r.join('')+'</tr>').join('')+'</tbody>'+(foot?'<tfoot><tr class="ft">'+foot.join('')+'</tr></tfoot>':'')+'</table>'}
 const td=(v,f,c)=>v==null||!isFinite(v)?'<td data-v="">—</td>':`<td data-v="${v}" class="${c?sg(v):''}">${f(v)}</td>`;
 const tt=s=>`<td class="t">${esc(s)}</td>`;
-const GRID=[['Gross Income','gi',$0,'sum','b'],['Vacancy','v',$0,'sum'],['Reserves','r',$0,'sum'],['Annual Gross Income','agi',$0,'sum','b'],['% Change','agc',PS,'avg'],['Operating Expense','ox',$0,'sum'],['Oper. Exp. Reimbursed','re',$0,'sum'],['Net Operating Income','noi',$0,'sum','hl'],['Debt Service','ds',$0,'sum'],
+const GRID=[['Gross Income','gi',$0,'sum','b'],['% Change','agc',PS,'avg'],['Vacancy','v',$0,'sum'],['Reserves','r',$0,'sum'],['Annual Gross Income','agi',$0,'sum','b'],['Operating Expense','ox',$0,'sum'],['Oper. Exp. Reimbursed','re',$0,'sum'],['Net Operating Income','noi',$0,'sum','hl'],['Debt Service','ds',$0,'sum'],
  ['Principal Reduction','pr',$0,'sum'],['Year End Loan Balance','bal',$0,''],['Cash Flow + Prin. Reduc.','cfp',$0,'sum','b'],['Total Return on Invest.','tr',P,'avg','hl'],
  ['Property Value (at cap)','val',$0,''],['Equity','equity',$0,''],['LTV','ltv',P,''],['Cash Flow (Monthly)','cfm',$0,'sum','b'],['Cash Flow (Annual)','cf',$0,'sum','hl'],['DSCR','dscr',X2,'avg','b'],['Cash on Cash Return','coc',P,'avg','hl']];
 let M;
