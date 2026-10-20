@@ -76,7 +76,6 @@ details{margin-top:8px;color:var(--muted)}summary{cursor:pointer;color:var(--gol
  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style>
 </head><body>
-<div id="gate"><form onsubmit="go(event)"><h1>Property CFA</h1><p class="muted">Enter password</p><input id="pw" type="password" autofocus><button>Open</button><div id="err" class="neg"></div></form></div>
 <div class="top"><div class="wrap"><h1>Property CFA / OM</h1><div class="muted">Single-property cash flow analysis &amp; offering memorandum · updates live as you type</div></div></div>
 <div class="wrap" id="app" style="display:none">
 <div class="bar2 noprint">
@@ -275,8 +274,8 @@ function renderLoc(){const g=demo&&demo.geo;
   if(id==='map2'&&ret&&ret.items){ret.items.forEach(x=>{const br=!!x.b;L.circleMarker([x.la,x.lo],{radius:br?6:3,color:br?'#e8b923':'#888',weight:1,fillColor:br?'#ff2d3a':'#bbb',fillOpacity:.9}).bindTooltip(esc(x.n),{permanent:br&&x.d<2.2,direction:'right',className:'lbl'}).addTo(lg)})}
   m.setView([g.lat,g.lon],id==='map2'?12:id==='map3'?12:11);setTimeout(()=>m.invalidateSize(),50)})}
 // ---- boot
-async function go(ev){ev.preventDefault();try{DEF=await decrypt(el('pw').value)}catch(e){el('err').textContent='Wrong password';return}
- el('gate').remove();el('app').style.display='';
+async function go(){try{DEF=await (await fetch('data.json',{cache:'no-store'})).json()}catch(e){DEF={props:[]}}
+ el('app').style.display='';
  const s=store();let changed=false;(DEF.props||[]).forEach(p=>{if(!s[p.name]){s[p.name]=p;changed=true}});if(changed)localStorage.setItem('pcfa_props',JSON.stringify(s));
  let last=null;try{last=JSON.parse(localStorage.getItem('pcfa_last')||'null')}catch(e){}
  const first=last||DEF.props[0];cur=first.name;fillSaved(first.name);
@@ -284,6 +283,8 @@ async function go(ev){ev.preventDefault();try{DEF=await decrypt(el('pw').value)}
  F.forEach(k=>{const e=el(k);if(e)e.addEventListener('input',calc)});el('addr').addEventListener('change',()=>{el('addr2').value=el('addr').value});
  setState(first);tab('P');if(first.addr&&!(first.demo&&first.demo.rings))runLoc(false)}
 function tab(t){document.querySelectorAll('#tabs .pill').forEach(b=>b.classList.toggle('on',b.dataset.t===t));document.querySelectorAll('section[data-s]').forEach(s=>s.style.display=s.dataset.s===t?'':'none');setTimeout(()=>{Object.values(maps).forEach(m=>m.invalidateSize());if(demo&&demo.geo)renderLoc()},60)}
+
+go();
 
 </script><!--SORTABLE-START--><script>
 /* Shared sortable tables (Grok Bot trackers). Click any header: asc/desc toggle with ▲/▼.
