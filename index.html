@@ -192,7 +192,7 @@ function card(l,v,s,c){return `<div class="card"><div class="l">${l}</div><div c
 function table(id,head,rows,foot){el(id).innerHTML='<table><thead><tr>'+head.map((x,i)=>`<th${i?'':' class="t"'}>${x}</th>`).join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr'+(r.cls?` class="${r.cls}"`:'')+'>'+r.join('')+'</tr>').join('')+'</tbody>'+(foot?'<tfoot><tr class="ft">'+foot.join('')+'</tr></tfoot>':'')+'</table>'}
 const td=(v,f,c)=>v==null||!isFinite(v)?'<td data-v="">—</td>':`<td data-v="${v}" class="${c?sg(v):''}">${f(v)}</td>`;
 const tt=s=>`<td class="t">${esc(s)}</td>`;
-const GRID=[['Gross Income','gi',$0,'sum','b'],['% Change','agc',PS,'avg'],['Vacancy','v',$0,'sum'],['Reserves','r',$0,'sum'],['Annual Gross Income','agi',$0,'sum','b'],['Operating Expense','ox',$0,'sum'],['Oper. Exp. Reimbursed','re',$0,'sum'],['Net Operating Income','noi',$0,'sum','hl'],['Debt Service','ds',$0,'sum'],
+const GRID=[['Gross Income','gi',$0,'sum','b'],['% Change','agc',PS,'avg'],['Vacancy','v',$0,'sum'],['Reserves','r',$0,'sum'],['Operating Expense','ox',$0,'sum'],['Oper. Exp. Reimbursed','re',$0,'sum'],['Net Operating Income','noi',$0,'sum','hl'],['Debt Service','ds',$0,'sum'],
  ['Principal Reduction','pr',$0,'sum'],['Year End Loan Balance','bal',$0,''],['Cash Flow + Prin. Reduc.','cfp',$0,'sum','b'],['Total Return on Invest.','tr',P,'avg','hl'],
  ['Property Value (at cap)','val',$0,''],['Equity','equity',$0,''],['LTV','ltv',P,''],['Cash Flow (Monthly)','cfm',$0,'sum','b'],['Cash Flow (Annual)','cf',$0,'sum','hl'],['DSCR','dscr',X2,'avg','b'],['Cash on Cash Return','coc',P,'avg','hl']];
 let M;
