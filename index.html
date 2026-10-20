@@ -192,8 +192,8 @@ function table(id,head,rows,foot){el(id).innerHTML='<table><thead><tr>'+head.map
 const td=(v,f,c)=>v==null||!isFinite(v)?'<td data-v="">—</td>':`<td data-v="${v}" class="${c?sg(v):''}">${f(v)}</td>`;
 const tt=s=>`<td class="t">${esc(s)}</td>`;
 const GRID=[['Gross Income','gi',$0,'sum','b'],['Vacancy','v',$0,'sum'],['Reserves','r',$0,'sum'],['Annual Gross Income','agi',$0,'sum','b'],['Operating Expense','ox',$0,'sum'],['Oper. Exp. Reimbursed','re',$0,'sum'],['Net Operating Income','noi',$0,'sum','hl'],['Debt Service','ds',$0,'sum'],
- ['Cash on Cash Return','coc',P,'avg','hl'],['Principal Reduction','pr',$0,'sum'],['Year End Loan Balance','bal',$0,''],['Cash Flow + Prin. Reduc.','cfp',$0,'sum','b'],['Total Return on Invest.','tr',P,'avg','hl'],
- ['Property Value (at cap)','val',$0,''],['Equity','equity',$0,''],['LTV','ltv',P,''],['Cash Flow (Monthly)','cfm',$0,'sum','b'],['Cash Flow (Annual)','cf',$0,'sum','hl']];
+ ['Principal Reduction','pr',$0,'sum'],['Year End Loan Balance','bal',$0,''],['Cash Flow + Prin. Reduc.','cfp',$0,'sum','b'],['Total Return on Invest.','tr',P,'avg','hl'],
+ ['Property Value (at cap)','val',$0,''],['Equity','equity',$0,''],['LTV','ltv',P,''],['Cash Flow (Monthly)','cfm',$0,'sum','b'],['Cash Flow (Annual)','cf',$0,'sum','hl'],['Cash on Cash Return','coc',P,'avg','hl']];
 let M;
 function calc(){const m=M=model(),r1=m.rows[0]||{};
  el('lprice').style.display=el('pmode').value==='price'?'':'none';el('lcap').style.display=el('pmode').value==='cap'?'':'none';
