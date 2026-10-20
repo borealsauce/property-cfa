@@ -144,6 +144,7 @@ const $=v=>v==null||!isFinite(v)?'—':(v<0?'-':'')+'$'+Math.abs(v).toLocaleStri
 const $0=v=>v==null||!isFinite(v)?'—':(v<0?'-':'')+'$'+Math.abs(v).toLocaleString('en-US',{maximumFractionDigits:0});
 const $k=v=>$0(v);
 const P=v=>v==null||!isFinite(v)?'—':(v*100).toFixed(2)+'%';
+const PS=v=>v==null||!isFinite(v)?'—':(v>0?'+':v<0?'-':'')+(Math.abs(v)*100).toFixed(1)+'%';
 const X2=v=>v==null||!isFinite(v)?'—':v.toFixed(2)+'x';
 const I=v=>v==null||!isFinite(v)?'—':Math.round(v).toLocaleString('en-US');
 const sg=v=>v>0?'pos':v<0?'neg':'';
@@ -182,7 +183,7 @@ function model(){
   if(ry&&y===ry){const bn=el('rbasis').value==='fwd'&&L[y]?L[y].noi:l.noi,v=vcap?bn/vcap:0,nl=v*(num('rltv')||0)/100,cost=nl*(num('rcost')||0)/100;co=nl-cost-S.bal;
    const ra=num('ramy')||0,rt=el('rtype').value,rr=(num('rrate')||0)/100;if(rt==='am'&&!ra)warn.push('Refi amortization blank: refi loan modeled as interest-only.');
    refi={y,val:v,nl,cost,payoff:S.bal,co,rate:rr,pmt:rt==='am'&&ra?PMT(rr,ra,nl):nl*rr};S={bal:nl,r:rr,type:rt==='am'&&ra?'am':'io',io:0,am:ra,k:0,pmt:null}}
-  const cf=l.noi-ds;rows.push({y,yr:start+y-1,...l,ds:-ds,cf,cfm:cf/12,dscr:ds?l.noi/ds:null,coc:inv?cf/inv:null,pr:-pr,bal:balY,cfp:cf+pr,tr:inv?(cf+pr)/inv:null,val,equity:val!=null?val-balY:null,ltv:val?balY/val:null,co,tot:cf+(co||0),toc:inv?(cf+(co||0))/inv:null,
+  const cf=l.noi-ds;rows.push({y,yr:start+y-1,...l,ds:-ds,cf,cfm:cf/12,agc:y>1&&L[y-2].agi?l.agi/L[y-2].agi-1:null,dscr:ds?l.noi/ds:null,coc:inv?cf/inv:null,pr:-pr,bal:balY,cfp:cf+pr,tr:inv?(cf+pr)/inv:null,val,equity:val!=null?val-balY:null,ltv:val?balY/val:null,co,tot:cf+(co||0),toc:inv?(cf+(co||0))/inv:null,
    net:cf,noi:l.noi,dsP:ds,prP:pr})}
  const ioP=loan0*rate,amP=amy?(dt==='mx'?PMT(num('rate2')!=null?num('rate2')/100:rate,amy,loan0):PMT(rate,amy,loan0)):null;
  const dep=price*(num('impr')??0)/100,life=num('life')||0;
@@ -191,7 +192,7 @@ function card(l,v,s,c){return `<div class="card"><div class="l">${l}</div><div c
 function table(id,head,rows,foot){el(id).innerHTML='<table><thead><tr>'+head.map((x,i)=>`<th${i?'':' class="t"'}>${x}</th>`).join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr'+(r.cls?` class="${r.cls}"`:'')+'>'+r.join('')+'</tr>').join('')+'</tbody>'+(foot?'<tfoot><tr class="ft">'+foot.join('')+'</tr></tfoot>':'')+'</table>'}
 const td=(v,f,c)=>v==null||!isFinite(v)?'<td data-v="">—</td>':`<td data-v="${v}" class="${c?sg(v):''}">${f(v)}</td>`;
 const tt=s=>`<td class="t">${esc(s)}</td>`;
-const GRID=[['Gross Income','gi',$0,'sum','b'],['Vacancy','v',$0,'sum'],['Reserves','r',$0,'sum'],['Annual Gross Income','agi',$0,'sum','b'],['Operating Expense','ox',$0,'sum'],['Oper. Exp. Reimbursed','re',$0,'sum'],['Net Operating Income','noi',$0,'sum','hl'],['Debt Service','ds',$0,'sum'],
+const GRID=[['Gross Income','gi',$0,'sum','b'],['Vacancy','v',$0,'sum'],['Reserves','r',$0,'sum'],['Annual Gross Income','agi',$0,'sum','b'],['% Change','agc',PS,'avg'],['Operating Expense','ox',$0,'sum'],['Oper. Exp. Reimbursed','re',$0,'sum'],['Net Operating Income','noi',$0,'sum','hl'],['Debt Service','ds',$0,'sum'],
  ['Principal Reduction','pr',$0,'sum'],['Year End Loan Balance','bal',$0,''],['Cash Flow + Prin. Reduc.','cfp',$0,'sum','b'],['Total Return on Invest.','tr',P,'avg','hl'],
  ['Property Value (at cap)','val',$0,''],['Equity','equity',$0,''],['LTV','ltv',P,''],['Cash Flow (Monthly)','cfm',$0,'sum','b'],['Cash Flow (Annual)','cf',$0,'sum','hl'],['DSCR','dscr',X2,'avg','b'],['Cash on Cash Return','coc',P,'avg','hl']];
 let M;
@@ -256,7 +257,7 @@ function exportX(){const m=M,nm=el('name').value||'Property',v=id=>el(id).value,
   [],[null,...yrs.map(r=>r.yr),'TOTAL/'],['Tenant',...yrs.map(r=>'year '+r.y),'AVG']];
  const hr=A.length;GRID.forEach(([l,k,f,t])=>{const vals=yrs.map(r=>r[k]??null),ok=vals.filter(x=>x!=null);A.push([l+':',...vals,t==='sum'?ok.reduce((a,b)=>a+b,0):t==='avg'&&ok.length?ok.reduce((a,b)=>a+b,0)/ok.length:null])});
  const ws=XLSX.utils.aoa_to_sheet(A);const pc=new Set(['Cash on Cash Return','Total Return on Invest.','LTV']);
- GRID.forEach(([l],i)=>{for(let c=1;c<=yrs.length+1;c++){const cl=ws[XLSX.utils.encode_cell({r:hr+i,c})];if(cl&&cl.t==='n')cl.z=l==='DSCR'?'0.00"x"':pc.has(l)?'0.00%':'$#,##0;[Red]-$#,##0'}});
+ GRID.forEach(([l],i)=>{for(let c=1;c<=yrs.length+1;c++){const cl=ws[XLSX.utils.encode_cell({r:hr+i,c})];if(cl&&cl.t==='n')cl.z=l==='DSCR'?'0.00"x"':l==='% Change'?'+0.0%;[Red]-0.0%':pc.has(l)?'0.00%':'$#,##0;[Red]-$#,##0'}});
  [[10,1],[11,1],[12,1],[13,1],[10,4],[10,7],[13,10],[14,1],[14,4],[7,1]].forEach(([r,c])=>{const cl=ws[XLSX.utils.encode_cell({r,c})];if(cl&&cl.t==='n')cl.z='$#,##0'});
  [[13,1],[11,4],[14,4],[11,7],[14,7],[10,10],[10,13],[11,13],[12,13],[13,13],[14,13]].forEach(([r,c])=>{const cl=ws[XLSX.utils.encode_cell({r,c})];if(cl&&cl.t==='n')cl.z='0.00%'});
  ws['!cols']=[{wch:28},...yrs.map(()=>({wch:13})),{wch:14}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Cash Flow Analysis');
