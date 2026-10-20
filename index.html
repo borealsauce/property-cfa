@@ -1,0 +1,354 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><link rel="icon" href="data:,"><title>Property CFA / OM</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#050505;--line:#262626;--gold:#e8b923;--txt:#f5f5f5;--muted:#a3a3a3;--red:#ff2d3a;--green:#22c55e;--surf:#141414;--surf2:#1c1c1c;--gb:#e8b92347}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(1200px 500px at 50% -200px,#e8b9231a,transparent),var(--bg);color:var(--txt);font:14px Inter,system-ui,sans-serif}
+h1,h2{font-family:Oswald,sans-serif;margin:0;color:var(--gold);text-transform:uppercase}h1{letter-spacing:.08em}
+h2{font-size:18px;margin:28px 0 10px;letter-spacing:.1em;font-weight:600;border-left:3px solid var(--gold);padding-left:10px}
+.wrap{max-width:1280px;margin:0 auto;padding:0 20px}
+.top{background:linear-gradient(180deg,#0c0c0c,#050505);border-bottom:1px solid var(--gb);box-shadow:0 12px 40px #0000008c;position:relative;padding:18px 0}
+.top::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,transparent,#e8b923,transparent)}
+.muted{color:var(--muted);font-size:12px}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 14px}
+.pill{background:var(--surf2);color:#d4d4d4;border:1px solid var(--line);border-radius:999px;padding:7px 16px;font:600 13px Inter,system-ui;cursor:pointer;transition:all .15s}
+.pill:hover{border-color:var(--gold);box-shadow:0 0 18px #e8b92355;transform:translateY(-1px)}
+.pill.on{background:linear-gradient(180deg,#f5c518,#e8b923);color:#050505;border-color:#e8b923;box-shadow:0 0 18px #e8b923d9,0 4px 12px #00000080}
+@media(max-width:600px){.pill{padding:6px 12px;font-size:12px}}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.card,.chartbox,#gate form{background:linear-gradient(180deg,#1c1c1c,#141414);border:1px solid var(--gb);border-radius:1rem;padding:14px;transition:transform .2s,box-shadow .2s}
+.card:hover,.chartbox:hover{transform:translateY(-4px) scale(1.01);box-shadow:0 14px 36px #00000073,0 0 0 1px #e8b923}
+.card .l{font:700 11px Inter;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+.card .v{font:700 26px Oswald;margin-top:4px}.card.hero .v{font-size:34px}
+.card .s{font-size:12px;color:var(--muted);margin-top:4px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
+table{width:100%;border-collapse:collapse;background:var(--surf);border:1px solid var(--gb);border-radius:1rem;overflow:hidden;color:var(--txt)}
+th,td{padding:7px 10px;text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:left}
+th{background:#0c0c0c;color:var(--gold);text-transform:uppercase;font:600 11px Inter;letter-spacing:.12em;border-bottom:1px solid var(--gold)}
+td{border-bottom:1px solid #202020}tr:nth-child(even) td{background:#0c0c0c66}tr:hover td{background:#e8b92314}tr.ft td{font-weight:700;background:#0c0c0c;border-top:1px solid var(--gb)}
+tr.dim td{color:var(--muted)}th.t,td.t{text-align:left!important}
+.scroll{overflow-x:auto}.neg{color:var(--red)!important}.pos{color:var(--green)!important}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+.ctip{position:fixed;z-index:999;pointer-events:none;background:#111;border:1px solid #e8b923;border-radius:.6rem;padding:8px 10px;font:12px Inter,sans-serif;color:#e5e5e5;box-shadow:0 8px 24px #000a;display:none;min-width:150px}.ctip b{display:block;color:#e8b923;margin-bottom:4px;font-size:13px}.ctip div{display:flex;justify-content:space-between;gap:14px}.ctip i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}.ctip .tt{border-top:1px solid #333;margin-top:4px;padding-top:4px;font-weight:600}.chartbox .hz{fill:transparent;cursor:pointer}.chartbox .hz:hover,.chartbox .hz.on{fill:#ffffff0d}
+.chartbox svg{width:100%;height:auto;display:block}.chartbox text{fill:#a3a3a3;font:11px Inter}
+.lg{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 4px 0 10px;vertical-align:middle}
+#gate{position:fixed;inset:0;background:var(--bg);display:grid;place-items:center;z-index:9}
+#gate form{padding:28px;text-align:center}
+#gate input{font:18px Inter;padding:8px 12px;border:1px solid var(--gb);border-radius:8px;width:180px;text-align:center;background:#0c0c0c;color:var(--txt)}
+#gate button{margin-left:6px;font:700 15px Inter;padding:9px 16px;border:0;border-radius:999px;background:var(--gold);color:#050505;cursor:pointer}
+@keyframes up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.fx-in{opacity:0;animation:up .6s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes shim{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.shim{background:linear-gradient(90deg,#f5c518 0%,#fff3b0 45%,#e8b923 55%,#f5c518 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:shim 3.5s linear infinite}
+.shim.neg{background:none;-webkit-text-fill-color:var(--red);animation:none}
+.bar{height:6px;background:#262626;border-radius:9px;margin-top:8px;overflow:hidden}.bar i{display:block;height:100%;width:0;border-radius:9px;transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
+.chartbox rect{transition:y .9s cubic-bezier(.2,.8,.2,1),height .9s cubic-bezier(.2,.8,.2,1)}
+@media(prefers-reduced-motion:reduce){.fx-in{animation:none;opacity:1}.shim{animation:none}.bar i,.chartbox rect{transition:none}.card:hover,.chartbox:hover,.pill:hover{transform:none}}
+
+tr.cur td{background:#e8b92326!important;font-weight:700}
+.info{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--muted);font-size:13px;margin:2px 0 14px}.info b{color:var(--txt);font-weight:600}
+.card .v.sm{font-size:20px}
+</style></head><body>
+<style>
+.strip{margin:14px 0}.strip .card .v{font-size:22px}
+.bar2{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
+select,input{font:14px Inter;padding:8px 10px;border:1px solid var(--gb);border-radius:8px;background:#0c0c0c;color:var(--txt)}
+.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:12px 0}
+.fg label{display:flex;flex-direction:column;gap:5px;font:600 11px Inter;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}.fg label.wide{grid-column:1/-1}
+.frm{background:linear-gradient(180deg,#1c1c1c,#141414);border:1px solid var(--gb);border-radius:1rem;padding:14px 16px;margin-bottom:14px}
+details{margin-top:8px;color:var(--muted)}summary{cursor:pointer;color:var(--gold)}
+.mapbox{height:420px;border:1px solid var(--gb);border-radius:1rem;overflow:hidden;background:#111}.mapbox.sm{height:300px}
+.cover{display:grid;grid-template-columns:1.2fr 1fr;gap:18px;align-items:start;margin:10px 0 6px}@media(max-width:900px){.cover{grid-template-columns:1fr}}
+.lbl{background:#111;color:#f5f5f5;border:1px solid #e8b923;font:600 11px Inter;padding:2px 6px}.lbl.subj{background:#e8b923;color:#050505}
+.rl{color:#b8860b;font:700 12px Inter;white-space:nowrap;text-shadow:0 0 3px #fff}
+.printonly{display:none}
+@media print{
+ @page{size:letter;margin:.45in}
+ body{background:#fff!important;color:#111}.top,.noprint,.bar2,#tabs,.frm,.strip{display:none!important}
+ section[data-s]{display:block!important;page-break-inside:auto}section.cov{page-break-after:always}section[data-s="L"]{page-break-after:always}
+ .card,.chartbox,table{background:#fff!important;border-color:#c9a227!important;color:#111!important;box-shadow:none!important}
+ th{background:#f4ecd0!important;color:#5a4500!important}td{color:#111!important;background:#fff!important}
+ .card .v,.card .l,h2,h1{color:#5a4500!important;-webkit-text-fill-color:#5a4500!important}.neg{color:#c00!important}.pos{color:#060!important}
+ .mapbox{height:380px}.ctip{display:none!important}.chartbox text{fill:#333}h2{page-break-after:avoid}
+ *{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+</head><body>
+<div id="gate"><form onsubmit="go(event)"><h1>Property CFA</h1><p class="muted">Enter password</p><input id="pw" type="password" autofocus><button>Open</button><div id="err" class="neg"></div></form></div>
+<div class="top"><div class="wrap"><h1>Property CFA / OM</h1><div class="muted">Single-property cash flow analysis &amp; offering memorandum · updates live as you type</div></div></div>
+<div class="wrap" id="app" style="display:none">
+<div class="bar2 noprint">
+ <select id="saved"></select><button class="pill" onclick="loadSel()">Load</button><button class="pill" onclick="saveCur()">Save</button><button class="pill" onclick="newProp()">New</button><button class="pill" onclick="delSel()">Delete</button>
+ <button class="pill" onclick="exportX()">Export .xlsx</button><button class="pill" onclick="printOM()">Print / PDF</button>
+</div>
+<div class="cards strip" id="strip"></div>
+<div class="pills noprint" id="tabs"><button class="pill" data-t="P">1 · Property &amp; Income</button><button class="pill" data-t="D">2 · Debt</button><button class="pill" data-t="R">3 · Refi</button><button class="pill" data-t="L">4 · Location</button><button class="pill" data-t="O">5 · Results / OM</button></div>
+
+<section data-s="O" class="cov"><div class="cover"><div><div class="muted">OFFERING MEMORANDUM</div><h1 id="cvName" class="shim" style="font-size:40px"></h1><div id="cvAddr" class="muted" style="font-size:15px"></div><div class="cards" id="cvK" style="margin-top:14px"></div></div><div id="map3" class="mapbox sm"></div></div>
+ </section>
+<section data-s="P" class="frm">
+ <div class="fg"><label>Property name<input id="name"></label><label>Address<input id="addr" placeholder="Street, City, ST"></label>
+ <label>Price entry<select id="pmode"><option value="price">Purchase price</option><option value="cap">Cap rate → price</option></select></label>
+ <label id="lprice">Purchase price ($)<input id="price" type="number"></label><label id="lcap">Cap rate (%)<input id="capin" type="number" step="0.01"></label>
+ <label>NOI Year 1 ($/yr)<input id="noi" type="number"></label>
+ <label>NOI annual increase type<select id="gmode"><option value="pct">%</option><option value="usd">$ per year</option></select></label>
+ <label>NOI annual increase<input id="g" type="number" step="0.01"></label>
+ <label class="wide">NOI by year override (optional, comma-separated)<input id="noiy" placeholder="e.g. 312984, 372350, …"></label>
+ <label>Closing costs, reserves + CapEx ($) ($)<input id="cc" type="number"></label>
+ <label>Hold years<input id="hold" type="number" min="1" max="30"></label></div>
+ <details><summary>Optional: build NOI from rent &amp; expenses</summary><div class="fg">
+ <label>Units / lots<input id="units" type="number"></label><label>Rent per unit ($/mo)<input id="rent" type="number"></label><label>Other income ($/mo)<input id="oth" type="number"></label><label>Vacancy (%)<input id="vac" type="number" step="0.1"></label><label>OpEx ($/mo)<input id="opx" type="number"></label><label>or OpEx (% of EGI)<input id="opxp" type="number" step="0.1"></label></div>
+ <button class="pill" onclick="buildNOI()">Use as NOI</button> <span class="muted" id="bnoi"></span></details>
+</section>
+<section data-s="D" class="frm"><div class="fg">
+ <label>LTV (%)<input id="ltv" type="number" step="0.1"></label><label>Interest rate (%)<input id="rate" type="number" step="0.01"></label>
+ <label>Term (years)<input id="term" type="number"></label>
+ <label>Debt type<select id="dtype"><option value="io">Interest-only</option><option value="am">Amortizing</option><option value="mx">Mixed (IO then amortizing)</option></select></label>
+ <label id="lio">IO period (years)<input id="ioy" type="number"></label><label id="lam">Amortization (years)<input id="amy" type="number"></label>
+ <label>Annual debt service override ($, optional)<input id="dso" type="number" placeholder="blank = calculated"></label></div>
+ <div class="info" id="dinfo"></div></section>
+<section data-s="R" class="frm"><div class="fg">
+ <label>Refi at end of year (0 = none)<input id="ry" type="number" min="0"></label><label>Valuation cap rate (%)<input id="rcap" type="number" step="0.01" placeholder="blank = purchase cap"></label>
+ <label>Refi value based on<select id="rbasis"><option value="trail">Refi-year NOI (trailing)</option><option value="fwd">Next-year NOI (forward)</option></select></label><label>Refi LTV (%)<input id="rltv" type="number" step="0.1"></label><label>Refi rate (%)<input id="rrate" type="number" step="0.01"></label>
+ <label>Refi type<select id="rtype"><option value="am">Amortizing</option><option value="io">Interest-only</option></select></label><label>Refi amortization (years)<input id="ramy" type="number"></label>
+ <label>Refi costs (% of new loan)<input id="rcost" type="number" step="0.1"></label></div><div class="info" id="rinfo"></div></section>
+<section data-s="L"><div class="frm"><div class="fg"><label>Address<input id="addr2"></label></div><button class="pill" onclick="runLoc(true)">Look up address</button> <span class="muted" id="lstat"></span></div>
+ <div class="grid2"><div><h2>Location · 1 / 3 / 5 Mile Rings</h2><div id="map" class="mapbox"></div></div><div><h2>Demographics</h2><div class="scroll" id="tDemo"></div><div class="muted" id="demoSrc"></div></div></div>
+ <h2>Nearby Retail &amp; Amenities (3 mi)</h2><div id="map2" class="mapbox"></div><div class="muted" id="rstat"></div><div class="scroll" id="tRet"></div></section>
+<section data-s="O" class="fin"><div class="grid2"><div><h2>NOI · Debt Service · Net Cash Flow</h2><div class="chartbox" id="c1"></div></div><div><h2>Value · Loan Balance · Equity</h2><div class="chartbox" id="c2"></div></div></div>
+ <h2>Debt &amp; Refi Summary</h2><div class="scroll" id="tDebt"></div>
+ <h2>Projection by Year</h2><div class="scroll" id="tY"></div>
+ </section><br></div>
+<div class="ctip" id="ctip"></div>
+
+<script>
+const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function decrypt(pw){const e=await (await fetch('data.enc.json',{cache:'no-store'})).json();
+ const km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);
+ const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:b64(e.salt),iterations:e.iter,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['decrypt']);
+ return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:b64(e.iv)},key,b64(e.ct))));}
+const $=v=>v==null||!isFinite(v)?'—':(v<0?'-':'')+'$'+Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const $0=v=>v==null||!isFinite(v)?'—':(v<0?'-':'')+'$'+Math.abs(v).toLocaleString('en-US',{maximumFractionDigits:0});
+const $k=v=>!isFinite(v)?'—':(v<0?'-':'')+'$'+(Math.abs(v)>=1e6?(Math.abs(v)/1e6).toFixed(2)+'M':Math.abs(v)>=1e3?(Math.abs(v)/1e3).toFixed(0)+'K':Math.abs(v).toFixed(0));
+const P=v=>v==null||!isFinite(v)?'—':(v*100).toFixed(2)+'%';
+const X2=v=>v==null||!isFinite(v)?'—':v.toFixed(2)+'x';
+const I=v=>v==null||!isFinite(v)?'—':Math.round(v).toLocaleString('en-US');
+const sg=v=>v>0?'pos':v<0?'neg':'';
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const el=id=>document.getElementById(id);
+const F=['name','addr','pmode','price','capin','noi','gmode','g','noiy','cc','hold','units','rent','oth','vac','opx','opxp','ltv','rate','term','dtype','ioy','amy','dso','ry','rcap','rbasis','rltv','rrate','rtype','ramy','rcost'];
+let DEF={},cur=null,demo=null,ret=null;
+const num=id=>{const v=el(id)?.value;return v===''||v==null?null:+v};
+function state(){const s={};F.forEach(k=>{if(el(k))s[k]=el(k).value});s.demo=demo;s.ret=ret;return s}
+function setState(s){F.forEach(k=>{if(el(k))el(k).value=s[k]??''});el('addr2').value=s.addr||'';demo=s.demo||null;ret=s.ret||null;calc();renderLoc()}
+function annuity(b,r,n){return r?b*r/(1-Math.pow(1+r,-n)):b/n}
+function model(){
+ const n1=num('noi')||0,hold=Math.max(1,Math.min(30,num('hold')||10));
+ const price=el('pmode').value==='cap'?(num('capin')?n1/(num('capin')/100):0):(num('price')||0);
+ const cap=price?n1/price:null;
+ const ov=(el('noiy').value||'').split(/[,\s]+/).filter(x=>x!=='').map(Number);
+ const g=num('g')||0,gm=el('gmode').value,noi=[];
+ for(let y=1;y<=hold;y++){let v=ov[y-1]!=null&&isFinite(ov[y-1])?ov[y-1]:(y===1?n1:gm==='pct'?noi[y-2]*(1+g/100):noi[y-2]+g);noi.push(v)}
+ const ltv=(num('ltv')||0)/100,loan0=price*ltv,down=price-loan0,eq=down+(num('cc')||0);
+ const rate=(num('rate')||0)/100,term=num('term')||0,dt=el('dtype').value,ioy=num('ioy')||0,amy=num('amy')||0,dso=num('dso');
+ const ioPmt=loan0*rate/12,amN=(dt==='mx'?amy:amy)*12,amPmt=amy?annuity(loan0,rate/12,amy*12):null;
+ const vcap=num('rcap')?num('rcap')/100:cap,ry=num('ry')||0,warn=[];
+ let L={bal:loan0,r:rate/12,type:dt,io:ioy*12,am:amy*12,m:0,pm:null,fixed:dso?dso/12:null},bal=loan0,balloon=null,refi=null,rows=[];
+ if((dt==='am'||dt==='mx')&&!amy&&!dso)warn.push('Amortization years blank: modeled as interest-only.');
+ for(let y=1;y<=hold;y++){let ds=0,pr=0;
+  for(let m=0;m<12;m++){const int=L.bal*L.r;let p;
+   if(L.fixed!=null)p=L.fixed;else if(L.type==='io'||!L.am||(L.type==='mx'&&L.m<L.io))p=int;else{if(L.pm==null)L.pm=annuity(L.bal,L.r,L.am);p=L.pm}
+   const pp=Math.max(0,Math.min(L.bal,p-int));L.bal-=pp;ds+=p;pr+=pp;L.m++;
+   if(!refi&&term&&y*12-12+m+1===term*12)balloon=L.bal}
+  let co=null;const val=vcap?noi[y-1]/vcap:null;
+  if(ry&&y===ry){const bn=el('rbasis').value==='fwd'&&noi[y]!=null?noi[y]:noi[y-1];const v=vcap?bn/vcap:0,nl=v*(num('rltv')||0)/100,cost=nl*(num('rcost')||0)/100;
+   co=nl-cost-L.bal;const rt=el('rtype').value,ra=num('ramy')||0;if(rt==='am'&&!ra)warn.push('Refi amortization blank: refi loan modeled as interest-only.');
+   refi={y,val:v,nl,cost,payoff:L.bal,co,rate:num('rrate'),io:(num('rrate')||0)/1200*nl,am:ra&&rt==='am'?annuity(nl,(num('rrate')||0)/1200,ra*12):null};
+   L={bal:nl,r:(num('rrate')||0)/1200,type:rt==='am'&&ra?'am':'io',io:0,am:ra*12,m:0,pm:null,fixed:null}}
+  const net=noi[y-1]-ds;rows.push({y,noi:noi[y-1],ds,dscr:ds?noi[y-1]/ds:null,net,netm:net/12,coc:eq?net/eq:null,pr,bal:L.bal,val,equity:val!=null?val-L.bal:null,ltv:val?L.bal/val:null,co,tot:net+(co||0),toc:eq?(net+(co||0))/eq:null})}
+ if(balloon==null&&term&&term<=hold&&refi&&refi.y<term)balloon=null;
+ return {price,cap,loan0,down,eq,ioPmt,amPmt,dt,rows,balloon,refi,warn,term,hold,vcap,dso}}
+function card(l,v,s,c){return `<div class="card"><div class="l">${l}</div><div class="v ${c||''}">${v}</div>${s?`<div class="s">${s}</div>`:''}</div>`}
+function table(id,head,rows,foot){el(id).innerHTML='<table><thead><tr>'+head.map((x,i)=>`<th${i?'':' class="t"'}>${x}</th>`).join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.join('')+'</tr>').join('')+'</tbody>'+(foot?'<tfoot><tr class="ft">'+foot.join('')+'</tr></tfoot>':'')+'</table>'}
+const td=(v,f,c)=>v==null||!isFinite(v)?'<td data-v="">—</td>':`<td data-v="${v}" class="${c?sg(v):''}">${f(v)}</td>`;
+const tt=s=>`<td class="t">${esc(s)}</td>`;
+let M;
+function calc(){const m=M=model(),r1=m.rows[0]||{};
+ el('lprice').style.display=el('pmode').value==='price'?'':'none';el('lcap').style.display=el('pmode').value==='cap'?'':'none';
+ const d=el('dtype').value;el('lio').style.display=d==='mx'?'':'none';el('lam').style.display=d==='io'?'none':'';
+ const pmt=m.dso?m.dso/12:d==='io'?m.ioPmt:d==='am'?(m.amPmt??m.ioPmt):m.ioPmt;
+ const pmtS=d==='mx'?`IO ${$0(m.ioPmt)} → amortizing ${$0(m.amPmt)}`:'';
+ el('strip').innerHTML=card('Price',$k(m.price))+card('NOI Yr 1',$0(r1.noi))+card('Cap Rate',P(m.cap))+card('Loan Payment Monthly',$0(pmt),pmtS)+card('DSCR Yr 1',X2(r1.dscr),'',r1.dscr<1.2?'neg':'pos')+card('Net Cash Flow Monthly',$0(r1.netm),$0(r1.net)+'/yr',sg(r1.net))+card('Cash-on-Cash Yr 1',P(r1.coc),'',sg(r1.coc))+card('LTV',P(m.price?m.loan0/m.price:null));
+ el('dinfo').innerHTML=`<span>Loan <b>${$0(m.loan0)}</b></span><span>Down payment <b>${$0(m.down)}</b></span><span>Total equity (incl. closing/CapEx) <b>${$0(m.eq)}</b></span><span>IO payment <b>${$0(m.ioPmt)}</b>/mo</span>${m.amPmt?`<span>Amortizing payment <b>${$0(m.amPmt)}</b>/mo</span>`:''}<span>Balloon at term end <b>${m.balloon!=null?$0(m.balloon):'—'}</b></span>`+m.warn.map(w=>`<span class="neg">${w}</span>`).join('');
+ el('rinfo').innerHTML=m.refi?`<span>Value at refi <b>${$0(m.refi.val)}</b></span><span>New loan <b>${$0(m.refi.nl)}</b></span><span>Costs <b>${$0(m.refi.cost)}</b></span><span>Payoff <b>${$0(m.refi.payoff)}</b></span><span>Net cash-out <b class="${sg(m.refi.co)}">${$0(m.refi.co)}</b></span><span>New payment <b>${$0(m.refi.am??m.refi.io)}</b>/mo</span>`:'<span>No refi modeled</span>';
+ el('cvName').textContent=el('name').value||'Untitled Property';el('cvAddr').textContent=el('addr').value;
+ el('cvK').innerHTML=card('Price',$k(m.price))+card('NOI Yr 1',$0(r1.noi))+card('Cap Rate',P(m.cap))+card('Cash-on-Cash Yr 1',P(r1.coc),'',sg(r1.coc))+card('DSCR Yr 1',X2(r1.dscr))+card('LTV',P(m.price?m.loan0/m.price:null));
+ table('tY',['Year','NOI','Debt Service','DSCR','Net Cash Flow Annual','Net Cash Flow Monthly','Cash-on-Cash','Principal Paydown','Loan Balance','Value','Equity','LTV','Refi Cash-Out','Total Cash Flow','Total CoC'],
+  m.rows.map(r=>[`<td class="t" data-v="${r.y}">Year ${r.y}</td>`,td(r.noi,$0),td(r.ds,$0),td(r.dscr,X2),td(r.net,$0,1),td(r.netm,$0,1),td(r.coc,P,1),td(r.pr,$0),td(r.bal,$0),td(r.val,$0),td(r.equity,$0,1),td(r.ltv,P),td(r.co,$0,1),td(r.tot,$0,1),td(r.toc,P,1)]),
+  ['<td class="t">TOTAL</td>',td(sum(m.rows,'noi'),$0),td(sum(m.rows,'ds'),$0),'<td></td>',td(sum(m.rows,'net'),$0,1),'<td></td><td></td>',td(sum(m.rows,'pr'),$0),'<td></td><td></td><td></td><td></td>',td(sum(m.rows,'co'),$0,1),td(sum(m.rows,'tot'),$0,1),'<td></td>']);
+ const dr=[['Purchase price',m.price,$0],['Loan amount',m.loan0,$0],['Down payment',m.down,$0],['Total equity',m.eq,$0],['Interest rate',num('rate')/100,P],['Term (years)',m.term,I],['IO payment monthly',m.ioPmt,$0],['Amortizing payment monthly',m.amPmt,$0],['Balloon at term end',m.balloon,$0]];
+ if(m.refi)dr.push(['Refi year',m.refi.y,I],['Refi value',m.refi.val,$0],['Refi loan',m.refi.nl,$0],['Refi costs',m.refi.cost,$0],['Refi net cash-out',m.refi.co,$0],['Refi rate',m.refi.rate/100,P],['Refi payment monthly',m.refi.am??m.refi.io,$0]);
+ table('tDebt',['Item','Value'],dr.map(([a,v,f])=>[tt(a),td(v,f)]));
+ chart('c1',m.rows,[['NOI','noi','#e8b923'],['Debt Service','ds','#ff2d3a'],['Net Cash Flow','net','#22c55e']],[['Cash-on-Cash','coc',P],['Refi Cash-Out','co',$0]]);
+ chart('c2',m.rows,[['Value','val','#e8b923'],['Loan Balance','bal','#ff2d3a'],['Equity','equity','#22c55e']],[['LTV','ltv',P],['Principal Paydown','pr',$0]]);
+ if(cur)try{localStorage.setItem('pcfa_last',JSON.stringify(state()))}catch(e){}}
+const sum=(a,k)=>a.reduce((s,x)=>s+(x[k]||0),0);
+function chart(id,rows,ser,extra){const W=640,H=260,pl=60,pb=26,n=rows.length;let mx=0,mn=0;rows.forEach(r=>ser.forEach(s=>{const v=r[s[1]]||0;mx=Math.max(mx,v);mn=Math.min(mn,v)}));if(mx===mn)mx=1;
+ const y=v=>10+(mx-v)/(mx-mn)*(H-pb-10),gw=(W-pl-10)/n,bw=gw*.8/ser.length;let s=`<svg viewBox="0 0 ${W} ${H}">`;
+ for(let i=0;i<=4;i++){const v=mn+(mx-mn)*i/4;s+=`<line x1="${pl}" x2="${W-10}" y1="${y(v)}" y2="${y(v)}" stroke="#262626"/><text x="${pl-6}" y="${y(v)+4}" text-anchor="end">${$k(v)}</text>`}
+ rows.forEach((r,i)=>{const x0=pl+i*gw+gw*.1;ser.forEach((sr,j)=>{const v=r[sr[1]]||0;s+=`<rect x="${x0+j*bw}" y="${Math.min(y(v),y(0))}" width="${bw-1}" height="${Math.abs(y(v)-y(0))}" fill="${sr[2]}" rx="2"/>`});
+  s+=`<text x="${pl+i*gw+gw/2}" y="${H-8}" text-anchor="middle">Y${r.y}</text><rect class="hz" data-i="${i}" x="${pl+i*gw}" y="0" width="${gw}" height="${H}" fill="transparent"/>`});
+ s+='</svg><div class="muted">'+ser.map(x=>`<span class="lg" style="background:${x[2]}"></span>${x[0]}`).join('')+'</div>';const box=el(id);box.innerHTML=s;
+ box.querySelectorAll('.hz').forEach(h=>{const show=e=>{const r=rows[+h.dataset.i],t=el('ctip');t.innerHTML=`<b>Year ${r.y}</b>`+ser.map(x=>`<div><span><i style="background:${x[2]}"></i>${x[0]}</span><span>${$0(r[x[1]])}</span></div>`).join('')+extra.map(x=>`<div><span>${x[0]}</span><span>${r[x[1]]==null?'—':x[2](r[x[1]])}</span></div>`).join('');t.style.display='block';const p=e.touches?e.touches[0]:e;t.style.left=Math.min(innerWidth-200,p.clientX+14)+'px';t.style.top=(p.clientY+14)+'px'};
+  h.addEventListener('mousemove',show);h.addEventListener('touchstart',show,{passive:true});h.addEventListener('mouseleave',()=>el('ctip').style.display='none')})}
+function buildNOI(){const u=num('units')||0,r=num('rent')||0,o=num('oth')||0,v=(num('vac')||0)/100;const egi=(u*r*(1-v)+o);const ox=num('opx')!=null?num('opx'):egi*(num('opxp')||0)/100;const n=(egi-ox)*12;el('bnoi').textContent=`EGI ${$0(egi)}/mo · OpEx ${$0(ox)}/mo · NOI ${$0(n)}/yr`;if(isFinite(n)){el('noi').value=Math.round(n*100)/100;calc()}}
+// ---- saves
+const store=()=>{try{return JSON.parse(localStorage.getItem('pcfa_props')||'{}')}catch(e){return {}}};
+function fillSaved(sel){const s=store();el('saved').innerHTML=Object.keys(s).map(k=>`<option ${k===sel?'selected':''}>${esc(k)}</option>`).join('')}
+function saveCur(){const s=store(),st=state(),k=st.name||'Untitled';s[k]=st;localStorage.setItem('pcfa_props',JSON.stringify(s));cur=k;fillSaved(k)}
+function loadSel(){const k=el('saved').value,s=store()[k];if(s){cur=k;setState(s)}}
+function delSel(){const k=el('saved').value;if(!k||!confirm('Delete '+k+' from this browser?'))return;const s=store();delete s[k];localStorage.setItem('pcfa_props',JSON.stringify(s));fillSaved()}
+function newProp(){cur='new';setState({pmode:'price',gmode:'pct',hold:10,dtype:'am',rtype:'am',rbasis:'trail'});}
+// ---- export
+function exportX(){const m=M,wb=XLSX.utils.book_new(),nm=el('name').value||'Property';
+ const inp=F.filter(k=>el(k)&&el(k).value!=='').map(k=>[el(k).closest('label')?el(k).closest('label').firstChild.textContent.trim():k,isNaN(+el(k).value)||el(k).tagName==='SELECT'?el(k).value:+el(k).value]);
+ const s1=XLSX.utils.aoa_to_sheet([['Input','Value'],...inp]);XLSX.utils.book_append_sheet(wb,s1,'Inputs');
+ const H=['Year','NOI','Debt Service','DSCR','Net Cash Flow Annual','Net Cash Flow Monthly','Cash-on-Cash','Principal Paydown','Loan Balance','Value','Equity','LTV','Refi Cash-Out','Total Cash Flow'];
+ const s2=XLSX.utils.aoa_to_sheet([H,...m.rows.map(r=>[r.y,r.noi,r.ds,r.dscr,r.net,r.netm,r.coc,r.pr,r.bal,r.val,r.equity,r.ltv,r.co,r.tot])]);
+ const rg=XLSX.utils.decode_range(s2['!ref']);for(let R=1;R<=rg.e.r;R++)for(let C=1;C<=13;C++){const c=s2[XLSX.utils.encode_cell({r:R,c:C})];if(c&&c.t==='n')c.z=[3].includes(C)?'0.00"x"':[6,11].includes(C)?'0.00%':'#,##0.00'}
+ s2['!cols']=H.map(h=>({wch:Math.max(12,h.length+2)}));XLSX.utils.book_append_sheet(wb,s2,'Projection');
+ const sm=[['Metric','Value'],['Purchase Price',m.price],['Cap Rate',m.cap],['Loan',m.loan0],['Down Payment',m.down],['Total Equity',m.eq],['Loan Payment Monthly (IO)',m.ioPmt],['Loan Payment Monthly (Amortizing)',m.amPmt],['Balloon at Term End',m.balloon]];
+ if(m.refi)sm.push(['Refi Year',m.refi.y],['Refi Value',m.refi.val],['Refi Loan',m.refi.nl],['Refi Net Cash-Out',m.refi.co]);XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(sm),'Summary');
+ if(demo&&demo.rings){XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Metric','1 Mile','3 Miles','5 Miles'],...DM.map(([l,k])=>[l,...demo.rings.map(r=>r[k]??null)]),['Source',demo.src]]),'Demographics')}
+ if(ret&&ret.items){XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Name','Brand','Category','Miles'],...ret.items.map(x=>[x.n,x.b||'',x.c,+x.d.toFixed(2)])]),'Nearby Retail')}
+ XLSX.writeFile(wb,nm.replace(/[^\w\- ]/g,'')+' CFA.xlsx')}
+function printOM(){document.body.classList.add('printing');Object.values(maps).forEach(m=>m&&m.invalidateSize());setTimeout(()=>{window.print();document.body.classList.remove('printing')},900)}
+// ---- location
+const maps={};let layers={};
+function mk(id){if(!window.L)return null;if(maps[id])return maps[id];const m=L.map(id,{zoomControl:id!=='map3',attributionControl:true,preferCanvas:false});L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:19,crossOrigin:true}).addTo(m);maps[id]=m;layers[id]=L.layerGroup().addTo(m);return m}
+const hav=(a,b,c,d)=>{const R=3958.8,t=x=>x*Math.PI/180,dl=t(c-a),dn=t(d-b),h=Math.sin(dl/2)**2+Math.cos(t(a))*Math.cos(t(c))*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h))};
+async function geocode(q){try{const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&countrycodes=us&limit=1&q='+encodeURIComponent(q));const j=await r.json();if(j[0])return {lat:+j[0].lat,lon:+j[0].lon,label:j[0].display_name,src:'OpenStreetMap Nominatim'}}catch(e){}
+ try{const r=await fetch('https://geocoding.geo.census.gov/geocoder/locations/onelineaddress?benchmark=Public_AR_Current&format=json&address='+encodeURIComponent(q));const j=await r.json();const m=j.result.addressMatches[0];if(m)return {lat:m.coordinates.y,lon:m.coordinates.x,label:m.matchedAddress,src:'US Census Geocoder'}}catch(e){}return null}
+const ESRI='https://P3ePLMYs2RVChkJx.svcs.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/',OLD='https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/';
+async function q(base,svc,fields,lat,lon){const u=`${base}${svc}/FeatureServer/2/query?geometry=${lon},${lat}&geometryType=esriGeometryPoint&inSR=4326&distance=5.5&units=esriSRUnit_StatuteMile&spatialRel=esriSpatialRelIntersects&outFields=GEOID,${fields}&returnGeometry=false&returnCentroid=true&outSR=4326&f=json`;const j=await (await fetch(u)).json();if(j.error)throw new Error(j.error.message);const o={};j.features.forEach(f=>o[f.attributes.GEOID]={...f.attributes,cx:f.centroid?.x,cy:f.centroid?.y});return o}
+const DM=[['Population','pop',I],['Population density (per sq mi)','dens',I],['Households','hh',I],['Median household income*','mhi',$0],['Average household income (est.)**','ahi',$0],['Per-capita income','pci',$0],['Median age*','age',v=>v==null?'—':v.toFixed(1)],['Owner-occupied %','own',P],['Renter-occupied %','rent',P],['Median home value*','mhv',$0],['Median contract rent*','mcr',$0],['Unemployment rate','unemp',P],['Population growth vs ACS 2010–2014','grow',P],['Daytime population / employment','day',I]];
+async function getDemo(lat,lon){const basic='B01001_001E,B01002_001E,B19049_001E,B25003_001E,B25003_002E,B25003_003E,B25077_001E,B25058_001E',bins=Array.from({length:16},(_,i)=>'B19001_0'+String(i+2).padStart(2,'0')+'E').join(',');
+ const [a,b,c]=await Promise.all([q(ESRI,'ACS_Population_and_Housing_Basics_View_Boundaries',basic,lat,lon),q(ESRI,'ACS_Employment_Status_View_Boundaries','B23025_003E,B23025_005E',lat,lon),q(ESRI,'ACS_Household_Income_Distribution_View_Boundaries','B19001_001E,'+bins,lat,lon)]);
+ let old=null;try{old=await q(OLD,'ACS_10_14_Total_Population_Boundaries','B01001_001E',lat,lon)}catch(e){}
+ const mids=[5e3,12500,17500,22500,27500,32500,37500,42500,47500,55e3,67500,87500,112500,137500,175e3,25e4];
+ const rings=[1,3,5].map(r=>{const ts=Object.values(a).filter(t=>t.cy!=null&&hav(lat,lon,t.cy,t.cx)<=r);let o={r,tracts:ts.length};const S=k=>ts.reduce((s,t)=>s+(t[k]>0?t[k]:0),0);const W=(k,w)=>{let n=0,d=0;ts.forEach(t=>{if(t[k]>0&&t[w]>0){n+=t[k]*t[w];d+=t[w]}});return d?n/d:null};
+  o.pop=S('B01001_001E');o.dens=o.pop/(Math.PI*r*r);o.hh=S('B25003_001E');o.mhi=W('B19049_001E','B25003_001E');o.age=W('B01002_001E','B01001_001E');
+  const oc=S('B25003_001E');o.own=oc?S('B25003_002E')/oc:null;o.rent=oc?S('B25003_003E')/oc:null;o.mhv=W('B25077_001E','B25003_002E');o.mcr=W('B25058_001E','B25003_003E');
+  let lf=0,un=0,hb=0,inc=0;ts.forEach(t=>{const e=b[t.GEOID];if(e){lf+=e.B23025_003E||0;un+=e.B23025_005E||0}const h=c[t.GEOID];if(h){mids.forEach((m,i)=>{const v=h['B19001_0'+String(i+2).padStart(2,'0')+'E']||0;hb+=v;inc+=v*m})}});
+  o.unemp=lf?un/lf:null;o.ahi=hb?inc/hb:null;o.pci=null;o.day=null;
+  if(old){const op=Object.values(old).filter(t=>t.cy!=null&&hav(lat,lon,t.cy,t.cx)<=r).reduce((s,t)=>s+(t.B01001_001E||0),0);o.old=op;o.grow=op?o.pop/op-1:null}else o.grow=null;
+  if(!ts.length)Object.keys(o).forEach(k=>{if(!['r','tracts'].includes(k))o[k]=null});return o});
+ return {rings,src:'U.S. Census Bureau ACS 2020–2024 5-year estimates (tract level, via Esri Living Atlas); growth vs ACS 2010–2014 5-year. Tracts counted when their centroid falls inside the ring.',at:new Date().toISOString()}}
+const BR=['Walmart','Target','Home Depot','The Home Depot',"Lowe's",'Costco','Sam\'s Club','Kroger','Publix','Safeway','Albertsons','Raley\'s','Smith\'s','WinCo','Save Mart','Grocery Outlet','Trader Joe\'s','Whole Foods','Sprouts','Aldi','Dollar General','Dollar Tree','Family Dollar','McDonald\'s','Starbucks','Chick-fil-A','Taco Bell','Burger King','Wendy\'s','Subway','In-N-Out','Jack in the Box','Carl\'s Jr.','Panda Express','Chipotle','Domino\'s','Pizza Hut','Dutch Bros','Walgreens','CVS','Rite Aid','AutoZone','O\'Reilly','Big 5','Ross','TJ Maxx','Marshalls','Kohl\'s','Best Buy','PetSmart','Petco','Planet Fitness','Chase','Wells Fargo','Bank of America','U.S. Bank','7-Eleven','Shell','Chevron','Arco','Circle K','Maverik','Speedway','Wawa','Sheetz','Food Lion','H-E-B','Meijer','Hy-Vee','Harris Teeter','Wegmans','Tractor Supply','Big Lots','Five Below','Popeyes','Sonic','Arby\'s','KFC','Dairy Queen','Little Caesars','Del Taco','El Pollo Loco','Jersey Mike\'s','Panera Bread','Dunkin\''];
+const OV=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://maps.mail.ru/osm/tools/overpass/api/interpreter'];
+async function getRet(lat,lon){const a=`(around:4828,${lat},${lon})`;const qq=`[out:json][timeout:40];(nwr["shop"~"^(supermarket|department_store|wholesale|hardware|doityourself|variety_store|convenience|mall)$"]${a};nwr["amenity"~"^(fast_food|bank|fuel|hospital|school|pharmacy|cafe|restaurant)$"]["brand"]${a};nwr["amenity"~"^(hospital|school|college|university)$"]${a};way["highway"~"^(motorway|trunk)$"]${a};);out center tags;`;
+ let j=null,err='';for(const u of OV){try{const r=await fetch(u,{method:'POST',body:'data='+encodeURIComponent(qq),headers:{'Content-Type':'application/x-www-form-urlencoded'}});if(r.ok){j=await r.json();break}err+=r.status+' '}catch(e){err+='x '}}
+ if(!j)return {err:'Overpass API unavailable ('+err.trim()+')'};const hw={},items=[];
+ j.elements.forEach(e=>{const t=e.tags||{},la=e.lat??e.center?.lat,lo=e.lon??e.center?.lon;if(la==null)return;const d=hav(lat,lon,la,lo);
+  if(t.highway){const k=t.ref||t.name;if(k&&(!hw[k]||hw[k].d>d))hw[k]={n:k,c:'Highway',d,la,lo};return}
+  const n=t.name||t.brand;if(!n)return;const c=t.shop?t.shop.replace(/_/g,' '):(t.amenity||'').replace(/_/g,' ');const bn=t.brand||BR.find(b=>n.toLowerCase().includes(b.toLowerCase()));items.push({n,b:bn&&BR.some(b=>bn.toLowerCase().includes(b.toLowerCase())||b.toLowerCase()===bn.toLowerCase())?bn:'',c,d,la,lo})});
+ const seen=new Set(),out=[...items,...Object.values(hw)].sort((x,y)=>x.d-y.d).filter(x=>{const k=x.n+'|'+x.c+'|'+x.d.toFixed(2);if(seen.has(k))return false;seen.add(k);return true});
+ return {items:out,src:'OpenStreetMap contributors via Overpass API',at:new Date().toISOString()}}
+async function runLoc(force){const a=el('addr2').value.trim()||el('addr').value.trim();if(!a){el('lstat').textContent='Enter an address.';return}el('addr').value=a;el('addr2').value=a;
+ const key='pcfa_loc_'+a.toLowerCase();let c=null;try{c=JSON.parse(localStorage.getItem(key)||'null')}catch(e){}
+ if(c&&!force){demo=c.demo;ret=c.ret;renderLoc();return}
+ el('lstat').textContent='Geocoding…';const g=await geocode(a);if(!g){el('lstat').textContent='Address not found.';return}
+ demo={geo:g};ret=null;renderLoc();el('lstat').textContent='Loading demographics and nearby retail…';
+ const [d,r]=await Promise.allSettled([getDemo(g.lat,g.lon),getRet(g.lat,g.lon)]);
+ demo={geo:g,...(d.status==='fulfilled'?d.value:{err:'Census data unavailable: '+(d.reason?.message||'request failed')})};ret=r.status==='fulfilled'?r.value:{err:'Retail data unavailable'};
+ try{localStorage.setItem(key,JSON.stringify({demo,ret}))}catch(e){}el('lstat').textContent='Located: '+g.label+' ('+g.src+')';renderLoc();calc()}
+function renderLoc(){const g=demo&&demo.geo;
+ if(demo&&demo.rings)table('tDemo',['Metric','1 Mile','3 Miles','5 Miles'],DM.map(([l,k,f])=>[tt(l),...demo.rings.map(r=>r[k]==null?'<td data-v="">unavailable</td>':td(r[k],f))]));else el('tDemo').innerHTML=`<div class="muted">${demo&&demo.err?esc(demo.err):'Look up an address to load demographics.'}</div>`;
+ el('demoSrc').innerHTML=demo&&demo.rings?'Source: '+esc(demo.src)+'<br>* Ring value = household/population-weighted average of tract medians. ** Estimated from household income brackets. Per-capita income and daytime population aren\'t in the free tract layers, so they show unavailable.':'';
+ if(ret&&ret.items){const top=ret.items.slice(0,200);table('tRet',['Name','Brand','Category','Miles'],top.map(x=>[tt(x.n),tt(x.b||''),tt(x.c),td(x.d,v=>v.toFixed(2))]));el('rstat').textContent=`${ret.items.length} places within 3 mi · ${ret.items.filter(x=>x.b).length} national brands highlighted · Source: ${ret.src}`}else{el('tRet').innerHTML='';el('rstat').textContent=ret&&ret.err?ret.err:''}
+ if(!g||!window.L)return;
+ ['map','map2','map3'].forEach(id=>{const m=mk(id);if(!m)return;const lg=layers[id];lg.clearLayers();
+  L.circleMarker([g.lat,g.lon],{radius:8,color:'#050505',weight:2,fillColor:'#e8b923',fillOpacity:1}).bindTooltip(el('name').value||'Subject',{permanent:true,direction:'top',className:'lbl subj'}).addTo(lg);
+  const rr=id==='map2'?[3]:[1,3,5];rr.forEach(r=>{L.circle([g.lat,g.lon],{radius:r*1609.34,color:'#e8b923',weight:2,fill:false,dashArray:'6 4'}).addTo(lg);L.marker([g.lat+r/69.0,g.lon],{icon:L.divIcon({className:'rl',html:r+' mi'})}).addTo(lg)});
+  if(id==='map2'&&ret&&ret.items){ret.items.forEach(x=>{const br=!!x.b;L.circleMarker([x.la,x.lo],{radius:br?6:3,color:br?'#e8b923':'#888',weight:1,fillColor:br?'#ff2d3a':'#bbb',fillOpacity:.9}).bindTooltip(esc(x.n),{permanent:br&&x.d<2.2,direction:'right',className:'lbl'}).addTo(lg)})}
+  m.setView([g.lat,g.lon],id==='map2'?12:id==='map3'?12:11);setTimeout(()=>m.invalidateSize(),50)})}
+// ---- boot
+async function go(ev){ev.preventDefault();try{DEF=await decrypt(el('pw').value)}catch(e){el('err').textContent='Wrong password';return}
+ el('gate').remove();el('app').style.display='';
+ const s=store();let changed=false;(DEF.props||[]).forEach(p=>{if(!s[p.name]){s[p.name]=p;changed=true}});if(changed)localStorage.setItem('pcfa_props',JSON.stringify(s));
+ let last=null;try{last=JSON.parse(localStorage.getItem('pcfa_last')||'null')}catch(e){}
+ const first=last||DEF.props[0];cur=first.name;fillSaved(first.name);
+ document.querySelectorAll('#tabs .pill').forEach(b=>b.onclick=()=>tab(b.dataset.t));
+ F.forEach(k=>{const e=el(k);if(e)e.addEventListener('input',calc)});el('addr').addEventListener('change',()=>{el('addr2').value=el('addr').value});
+ setState(first);tab('P');if(first.addr&&!(first.demo&&first.demo.rings))runLoc(false)}
+function tab(t){document.querySelectorAll('#tabs .pill').forEach(b=>b.classList.toggle('on',b.dataset.t===t));document.querySelectorAll('section[data-s]').forEach(s=>s.style.display=s.dataset.s===t?'':'none');setTimeout(()=>{Object.values(maps).forEach(m=>m.invalidateSize());if(demo&&demo.geo)renderLoc()},60)}
+
+</script><!--SORTABLE-START--><script>
+/* Shared sortable tables (Grok Bot trackers). Click any header: asc/desc toggle with ▲/▼.
+   Works on dynamically rendered tables via event delegation. Totals (tfoot, .total/.ft/.tot rows,
+   or first cell TOTAL/ALL-TIME/GRAND) stay pinned at bottom. Group-label rows (fewer cells / colspan)
+   keep their members: sorting happens within each group. Uses td[data-v] when present.
+   Skip: th with own onclick, th.nosort, or table[data-nosort]. */
+(function(){
+  if(window.__sortableShared)return;window.__sortableShared=1;
+  var st=document.createElement('style');
+  st.textContent='table:not([data-nosort]) th:not(.nosort){cursor:pointer;user-select:none}th .srt-ar{font-size:.8em;opacity:.85;margin-left:3px}';
+  (document.head||document.documentElement).appendChild(st);
+  var MON={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+  function key(cell){
+    if(!cell)return null;
+    var raw=cell.dataset&&cell.dataset.v!=null?cell.dataset.v:cell.textContent;
+    var s=String(raw).replace(/[▲▼]/g,'').trim();
+    if(!s||s==='—'||s==='-'||s==='–'||/^n\/?a$/i.test(s))return null;
+    var m;
+    if((m=s.match(/^(\d{4})-(\d{2})(?:-(\d{2}))?/)))return {n:Date.UTC(+m[1],+m[2]-1,+(m[3]||1))};
+    if((m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/))){var y=+m[3];if(y<100)y+=2000;return {n:Date.UTC(y,+m[1]-1,+m[2])};}
+    if((m=s.match(/^([A-Za-z]{3})[a-z]*\.? (\d{1,2}),? (\d{4})$/))&&MON[m[1].toLowerCase()])return {n:Date.UTC(+m[3],MON[m[1].toLowerCase()]-1,+m[2])};
+    if((m=s.match(/^([A-Za-z]{3})[a-z]* (\d{4})$/))&&MON[m[1].toLowerCase()])return {n:Date.UTC(+m[2],MON[m[1].toLowerCase()]-1,1)};
+    if((m=s.match(/^Q([1-4]) (\d{4})$/i)))return {n:Date.UTC(+m[2],(+m[1]-1)*3,1)};
+    var t=s.replace(/[$,%x×\s]|USD/gi,'').replace(/^\+/,'').replace(/[−–]/g,'-');
+    var neg=/^\(.*\)$/.test(t);if(neg)t=t.slice(1,-1);
+    var mult=1;if((m=t.match(/^(-?[\d.]+)([KMB])$/i))){t=m[1];mult={k:1e3,m:1e6,b:1e9}[m[2].toLowerCase()];}
+    if(/^-?\d*\.?\d+$/.test(t))return {n:parseFloat(t)*mult*(neg?-1:1)};
+    return {s:s.toLowerCase()};
+  }
+  function pinned(r){
+    if(r.parentElement&&r.parentElement.tagName==='TFOOT')return true;
+    if(/(^|\s)(total|totals|ft|tot|sum|grand|pinned)(\s|$)/i.test(r.className))return true;
+    var c=r.cells[0];return !!c&&/^\s*(TOTAL|TOTALS|ALL-TIME|GRAND TOTAL)\b/i.test(c.textContent);
+  }
+  document.addEventListener('click',function(e){
+    var th=e.target.closest&&e.target.closest('th');if(!th||th.onclick||th.classList.contains('nosort'))return;
+    var tb=th.closest('table');if(!tb||tb.hasAttribute('data-nosort'))return;
+    var hr=th.parentElement;if(hr.parentElement.tagName==='TFOOT')return;
+    var ci=0;for(var k=0;k<hr.cells.length&&hr.cells[k]!==th;k++)ci+=hr.cells[k].colSpan||1;
+    var ncol=0;for(k=0;k<hr.cells.length;k++)ncol+=hr.cells[k].colSpan||1;
+    var dir=th.dataset.sdir==='asc'?'desc':'asc',m=dir==='asc'?1:-1;
+    tb.querySelectorAll('th').forEach(function(x){delete x.dataset.sdir;var a=x.querySelector('.srt-ar');if(a)a.remove();});
+    th.dataset.sdir=dir;var ar=document.createElement('span');ar.className='srt-ar';ar.textContent=dir==='asc'?'▲':'▼';th.appendChild(ar);
+    var bodies=tb.tBodies.length?[].slice.call(tb.tBodies):[tb];
+    bodies.forEach(function(body){
+      var all=[].slice.call(body.rows).filter(function(r){return r!==hr&&!(r.cells.length&&r.cells[0].tagName==='TH'&&!r.querySelector('td'));});
+      var pins=[],groups=[{head:null,rows:[]}];
+      all.forEach(function(r){
+        if(pinned(r)){pins.push(r);return;}
+        var w=0;for(var j=0;j<r.cells.length;j++)w+=r.cells[j].colSpan||1;
+        if(r.cells.length===1&&ncol>1)groups.push({head:r,rows:[]});else groups[groups.length-1].rows.push(r);
+      });
+      function cellAt(r){var x=0;for(var j=0;j<r.cells.length;j++){if(x===ci)return r.cells[j];x+=r.cells[j].colSpan||1;}return null;}
+      groups.forEach(function(g){
+        g.rows.sort(function(a,b){var A=key(cellAt(a)),B=key(cellAt(b));
+          if(!A&&!B)return 0;if(!A)return 1;if(!B)return -1;
+          if(A.n!=null&&B.n!=null)return (A.n-B.n)*m;
+          return String(A.s!=null?A.s:A.n).localeCompare(String(B.s!=null?B.s:B.n),undefined,{numeric:true})*m;});
+        if(g.head)body.appendChild(g.head);g.rows.forEach(function(r){body.appendChild(r);});
+      });
+      pins.forEach(function(r){body.appendChild(r);});
+    });
+  },false);
+})();
+
+</script><!--SORTABLE-END-->
+</body></html>
