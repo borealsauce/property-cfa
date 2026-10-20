@@ -108,14 +108,14 @@ table.grid tr.b td{font-weight:700}table.grid tr.hl td{background:#e8b9231c!impo
 <div class="boxes">
 <div class="box"><h3>Property Information</h3>
 <label>Price entry<select id="pmode"><option value="price">Purchase price</option><option value="cap">Cap rate → price</option></select></label>
-<label id="lprice">Purchase Price ($)<input id="price" type="number"></label><label id="lcap">Cap Rate target (%)<input id="capin" type="number" step="0.01"></label>
+<label id="lprice">Purchase Price ($)<input id="price" type="text" inputmode="decimal"></label><label id="lcap">Cap Rate target (%)<input id="capin" type="number" step="0.01"></label>
 <label>Down payment entry<select id="dpmode"><option value="ltv">LTV %</option><option value="usd">Down Payment $</option></select></label>
-<label id="lltv">LTV (%)<input id="ltv" type="number" step="any"></label><label id="ldown">Down Payment ($)<input id="down" type="number"></label>
-<label>Closing / Reserves / CapEx ($)<input id="cc" type="number" step="any" placeholder=""></label>
+<label id="lltv">LTV (%)<input id="ltv" type="number" step="any"></label><label id="ldown">Down Payment ($)<input id="down" type="text" inputmode="decimal"></label>
+<label>Closing / Reserves / CapEx ($)<input id="cc" type="text" inputmode="decimal" step="any" placeholder=""></label>
 <div class="ro"><span>Down Payment</span><b id="oDown"></b></div><div class="ro"><span>Loan Amount</span><b id="oLoan"></b></div><div class="ro"><span>Cap Rate</span><b id="oCap"></b></div><div class="ro"><span>Cash Invested</span><b id="oInv"></b></div></div>
 <div class="box"><h3>Loan Information</h3><div class="two"><div><div class="sub">Original Loan</div>
 <label>Debt type<select id="dtype"><option value="am">Amortizing</option><option value="io">Interest-only</option><option value="mx">Mixed (IO then amortizing)</option></select></label>
-<label>Interest (%)<input id="rate" type="number" step="any" placeholder=""></label><label>Amort (yrs)<input id="amy" type="number" step="any" placeholder=""></label><label id="lio">IO period (yrs)<input id="ioy" type="number"></label><label>Term (yrs)<input id="term" type="number" step="any" placeholder=""></label><label>Debt service override ($/yr)<input id="dso" type="number" step="any" placeholder="optional"></label>
+<label>Interest (%)<input id="rate" type="number" step="any" placeholder=""></label><label>Amort (yrs)<input id="amy" type="number" step="any" placeholder=""></label><label id="lio">IO period (yrs)<input id="ioy" type="number"></label><label>Term (yrs)<input id="term" type="number" step="any" placeholder=""></label><label>Debt service override ($/yr)<input id="dso" type="text" inputmode="decimal" step="any" placeholder="optional"></label>
 <div class="ro"><span>LTV</span><b id="oLtv"></b></div><div class="ro"><span>Loan Payment Monthly</span><b id="oPmt"></b></div><div class="ro s"><span></span><b id="oPmt2"></b></div><div class="ro"><span>Balloon at term</span><b id="oBal"></b></div></div>
 <div><div class="sub">Refinance Loan</div><label>Refi at end of year (0 = none)<input id="ry" type="number" step="any" placeholder=""></label><label>Refi LTV of value (%)<input id="rltv" type="number" step="any" placeholder=""></label><label>Interest (%)<input id="rrate" type="number" step="any" placeholder=""></label>
 <label>Type<select id="rtype"><option value="am">Amortizing</option><option value="io">Interest-only</option></select></label><label>Amort (yrs)<input id="ramy" type="number" step="any" placeholder=""></label><label>Term (yrs)<input id="rterm" type="number" step="any" placeholder=""></label>
@@ -124,8 +124,8 @@ table.grid tr.b td{font-weight:700}table.grid tr.hl td{background:#e8b9231c!impo
 <div class="box"><h3>Depreciation</h3><label>Improvement Ratio (%)<input id="impr" type="number" step="any" placeholder=""></label><div class="ro"><span>Depreciable Basis</span><b id="oDep"></b></div><label>Useful Life (yrs)<input id="life" type="number" step="any" placeholder=""></label><div class="ro"><span>Annual Depreciation</span><b id="oADep"></b></div></div>
 <div class="box"><h3>Tax Assumptions</h3><label>Federal Tax Rate (%)<input id="fed" type="number" step="any" placeholder=""></label><label>State Tax Rate (%)<input id="st" type="number" step="any" placeholder=""></label><div class="sub">Expenses</div><label>Vacancy (% of gross)<input id="vac" type="number" step="any" placeholder=""></label><label>Reserve (% of gross)<input id="res" type="number" step="any" placeholder=""></label><label>Operating Expenses (% of gross)<input id="opx" type="number" step="any" placeholder=""></label><label>Oper. Exp. Reimbursed (% of opex)<input id="reimb" type="number" step="any" placeholder=""></label></div>
 </div>
-<div class="box wide"><h3>Income</h3><div class="hrow"><label>Tenant / Gross Income Year 1 ($/yr)<input id="inc" type="number" step="any" placeholder=""></label><label>Annual increase type<select id="gmode"><option value="pct">%</option><option value="usd">$ per year</option></select></label><label>Annual increase<input id="g" type="number" step="any" placeholder=""></label><label>Start year<input id="start" type="number" step="any" placeholder=""></label><label>Years shown<input id="hold" type="number" step="any" placeholder=""></label></div>
-<div class="hrow"><label>Gross income by year (optional, comma-separated)<input id="incy" type="text" step="any" placeholder=""></label><label>Operating expense by year ($, optional, comma-separated)<input id="opxy" type="text" step="any" placeholder=""></label></div></div>
+<div class="box wide"><h3>Income</h3><div class="hrow"><label>Tenant / Gross Income Year 1 ($/yr)<input id="inc" type="text" inputmode="decimal" step="any" placeholder=""></label><label>Annual increase type<select id="gmode"><option value="pct">%</option><option value="usd">$ per year</option></select></label><label>Annual increase<input id="g" type="text" inputmode="decimal" step="any" placeholder=""></label><label>Start year<input id="start" type="number" step="any" placeholder=""></label><label>Years shown<input id="hold" type="number" step="any" placeholder=""></label></div>
+<div class="hrow"><label>Gross income by year (optional, separate with ;)<input id="incy" type="text" step="any" placeholder=""></label><label>Operating expense by year ($, optional, separate with ;)<input id="opxy" type="text" step="any" placeholder=""></label></div></div>
 <div class="muted neg" id="wn"></div>
 <div class="scroll" id="tGrid"></div>
 <h2>Net Cash Flow &amp; Cash on Cash</h2><div class="chartbox" id="cNet"></div>
@@ -142,7 +142,7 @@ table.grid tr.b td{font-weight:700}table.grid tr.hl td{background:#e8b9231c!impo
 <script>
 const $=v=>v==null||!isFinite(v)?'—':(v<0?'-':'')+'$'+Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 const $0=v=>v==null||!isFinite(v)?'—':(v<0?'-':'')+'$'+Math.abs(v).toLocaleString('en-US',{maximumFractionDigits:0});
-const $k=v=>!isFinite(v)?'—':(v<0?'-':'')+'$'+(Math.abs(v)>=1e6?(Math.abs(v)/1e6).toFixed(2)+'M':Math.abs(v)>=1e3?(Math.abs(v)/1e3).toFixed(0)+'K':Math.abs(v).toFixed(0));
+const $k=v=>$0(v);
 const P=v=>v==null||!isFinite(v)?'—':(v*100).toFixed(2)+'%';
 const X2=v=>v==null||!isFinite(v)?'—':v.toFixed(2)+'x';
 const I=v=>v==null||!isFinite(v)?'—':Math.round(v).toLocaleString('en-US');
@@ -151,12 +151,17 @@ const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&g
 const el=id=>document.getElementById(id);
 const F=['name','addr','prep','rev','units','pmode','price','capin','dpmode','down','ltv','cc','rate','amy','term','dtype','ioy','dso','ry','rltv','rrate','ramy','rterm','rtype','rcap','rbasis','rcost','impr','life','fed','st','vac','res','opx','reimb','inc','gmode','g','incy','opxy','start','hold'];
 let DEF={},cur=null,demo=null,ret=null;
-const num=id=>{const v=el(id)?.value;return v===''||v==null?null:+v};
-const lst=id=>(el(id).value||'').split(/[,\s]+/).filter(x=>x!=='').map(Number);
+const pn=v=>{v=String(v??'').replace(/[$,\s]/g,'');return v===''||v==='-'?null:+v};
+const num=id=>pn(el(id)?.value);
+const MONEY=['price','down','cc','dso','inc'],MLIST=['incy','opxy'];
+const fmtM=v=>{const n=pn(v);return n==null||!isFinite(n)?v:(n<0?'-':'')+Math.abs(n).toLocaleString('en-US',{maximumFractionDigits:2})};
+function fmtField(k){const e=el(k);if(!e||document.activeElement===e)return;if(MONEY.includes(k)||(k==='g'&&el('gmode').value==='usd'))e.value=e.value===''?'':fmtM(e.value);else if(MLIST.includes(k))e.value=lstv(e.value).map(fmtM).join('; ')}
+const lstv=s=>String(s||'').split(/;|,\s+|\s+/).map(x=>x.trim()).filter(x=>x!=='').map(x=>x.replace(/[$,]/g,''));
+const lst=id=>lstv(el(id).value).map(Number);
 function state(){const s={};F.forEach(k=>{if(el(k))s[k]=el(k).value});s.demo=demo;s.ret=ret;return s}
 const MIG={noi:'inc',noiy:'incy'};
 function setState(s){s={...s};Object.entries(MIG).forEach(([o,n])=>{if(s[o]!=null&&s[n]==null)s[n]=s[o]});if(s.ltv==null&&s.dpmode==null)s.dpmode='ltv';
- F.forEach(k=>{if(el(k))el(k).value=s[k]??(el(k).tagName==='SELECT'?el(k).options[0].value:'')});el('addr2').value=s.addr||'';demo=s.demo||null;ret=s.ret||null;calc();renderLoc()}
+ F.forEach(k=>{if(el(k))el(k).value=s[k]??(el(k).tagName==='SELECT'?el(k).options[0].value:'')});el('addr2').value=s.addr||'';demo=s.demo||null;ret=s.ret||null;[...MONEY,...MLIST,'g'].forEach(fmtField);calc();renderLoc()}
 const PMT=(r,n,pv)=>n?(r?pv*r/(1-Math.pow(1+r,-n)):pv/n):pv*r;
 function model(){
  const hold=Math.max(1,Math.min(30,num('hold')||15)),start=num('start')||new Date().getFullYear();
@@ -210,7 +215,7 @@ function calc(){const m=M=model(),r1=m.rows[0]||{};
  chart('c2',m.rows,[['Value','val','#e8b923'],['Loan Balance','bal','#ff2d3a'],['Equity','equity','#22c55e']],[['LTV','ltv',P],['Principal Reduction','prP',$0]]);
  try{localStorage.setItem('pcfa_last',JSON.stringify(state()))}catch(e){}}
 const sum=(a,k)=>a.reduce((s,x)=>s+(x[k]||0),0);
-function chart(id,rows,ser,extra){const W=640,H=260,pl=60,pb=26,n=rows.length;let mx=0,mn=0;rows.forEach(r=>ser.forEach(s=>{const v=r[s[1]]||0;mx=Math.max(mx,v);mn=Math.min(mn,v)}));if(mx===mn)mx=1;
+function chart(id,rows,ser,extra){const W=660,H=260,pl=84,pb=26,n=rows.length;let mx=0,mn=0;rows.forEach(r=>ser.forEach(s=>{const v=r[s[1]]||0;mx=Math.max(mx,v);mn=Math.min(mn,v)}));if(mx===mn)mx=1;
  const y=v=>10+(mx-v)/(mx-mn)*(H-pb-10),gw=(W-pl-10)/n,bw=gw*.8/ser.length;let s=`<svg viewBox="0 0 ${W} ${H}">`;
  for(let i=0;i<=4;i++){const v=mn+(mx-mn)*i/4;s+=`<line x1="${pl}" x2="${W-10}" y1="${y(v)}" y2="${y(v)}" stroke="#262626"/><text x="${pl-6}" y="${y(v)+4}" text-anchor="end">${$k(v)}</text>`}
  rows.forEach((r,i)=>{const x0=pl+i*gw+gw*.1;ser.forEach((sr,j)=>{const v=r[sr[1]]||0;s+=`<rect x="${x0+j*bw}" y="${Math.min(y(v),y(0))}" width="${bw-1}" height="${Math.abs(y(v)-y(0))}" fill="${sr[2]}" rx="2"/>`});
@@ -218,7 +223,7 @@ function chart(id,rows,ser,extra){const W=640,H=260,pl=60,pb=26,n=rows.length;le
  s+='</svg><div class="muted">'+ser.map(x=>`<span class="lg" style="background:${x[2]}"></span>${x[0]}`).join('')+'</div>';const box=el(id);box.innerHTML=s;
  box.querySelectorAll('.hz').forEach(h=>{const show=e=>{const r=rows[+h.dataset.i],t=el('ctip');t.innerHTML=`<b>Year ${r.y}</b>`+ser.map(x=>`<div><span><i style="background:${x[2]}"></i>${x[0]}</span><span>${$0(r[x[1]])}</span></div>`).join('')+extra.map(x=>`<div><span>${x[0]}</span><span>${r[x[1]]==null?'—':x[2](r[x[1]])}</span></div>`).join('');t.style.display='block';const p=e.touches?e.touches[0]:e;t.style.left=Math.min(innerWidth-200,p.clientX+14)+'px';t.style.top=(p.clientY+14)+'px'};
   h.addEventListener('mousemove',show);h.addEventListener('touchstart',show,{passive:true});h.addEventListener('mouseleave',()=>el('ctip').style.display='none')})}
-function netChart(id,rows,refiY){const W=760,H=300,pl=60,pr=48,pb=26,pt=14,n=rows.length;const net=rows.map(r=>r.net),ds=rows.map(r=>r.ds),coc=rows.map(r=>r.coc||0);
+function netChart(id,rows,refiY){const W=780,H=300,pl=84,pr=48,pb=26,pt=14,n=rows.length;const net=rows.map(r=>r.net),ds=rows.map(r=>r.ds),coc=rows.map(r=>r.coc||0);
  const all=[...net,...ds];const mx=Math.max(0,...all)*1.08||1,mn=Math.min(0,...all)*1.08;const sy=v=>pt+(H-pt-pb)*(mx-v)/(mx-mn||1),bw=(W-pl-pr)/n;
  const lmx=Math.max(0,...coc)*1.15||.01,lmn=Math.min(0,...coc)*1.15,ly=v=>pt+(H-pt-pb)*(lmx-v)/(lmx-lmn||1);let g='';
  
@@ -314,7 +319,7 @@ async function go(){try{DEF=await (await fetch('data.json',{cache:'no-store'})).
  let last=null;try{last=JSON.parse(localStorage.getItem('pcfa_last')||'null')}catch(e){}if(last&&last.inc==null)last=null;
  const first=last||s[DEF.props[0].name];cur=first.name;fillSaved(first.name);
  document.querySelectorAll('#tabs .pill').forEach(b=>b.onclick=()=>tab(b.dataset.t));
- F.forEach(k=>{const e=el(k);if(e){e.addEventListener('input',calc);e.addEventListener('change',calc)}});el('addr').addEventListener('change',()=>{el('addr2').value=el('addr').value});
+ F.forEach(k=>{const e=el(k);if(e){e.addEventListener('input',calc);e.addEventListener('change',calc);e.addEventListener('blur',()=>{fmtField(k)})}});el('gmode').addEventListener('change',()=>{fmtField('g')});el('addr').addEventListener('change',()=>{el('addr2').value=el('addr').value});
  setState(first);tab('A');if(first.addr&&!(first.demo&&first.demo.rings))runLoc(false)}
 function tab(t){document.querySelectorAll('#tabs .pill').forEach(b=>b.classList.toggle('on',b.dataset.t===t));document.querySelectorAll('section[data-s]').forEach(s=>s.style.display=s.dataset.s===t?'':'none');setTimeout(()=>{Object.values(maps).forEach(m=>m.invalidateSize());if(demo&&demo.geo)renderLoc()},60)}
 go();
