@@ -115,7 +115,7 @@ table.grid tr.b td{font-weight:700}table.grid tr.hl td{background:#e8b9231c!impo
 <div class="ro"><span>Down Payment</span><b id="oDown"></b></div><div class="ro"><span>Loan Amount</span><b id="oLoan"></b></div><div class="ro"><span>Cap Rate</span><b id="oCap"></b></div><div class="ro"><span>Cash Invested</span><b id="oInv"></b></div></div>
 <div class="box"><h3>Loan Information</h3><div class="two"><div><div class="sub">Original Loan</div>
 <label>Debt type<select id="dtype"><option value="am">Amortizing</option><option value="io">Interest-only</option><option value="mx">Mixed (IO then amortizing)</option></select></label>
-<label>Interest (%)<input id="rate" type="number" step="any" placeholder=""></label><label>Amort (yrs)<input id="amy" type="number" step="any" placeholder=""></label><label id="lio">IO period (yrs)<input id="ioy" type="number"></label><label>Term (yrs)<input id="term" type="number" step="any" placeholder=""></label><label>Debt service override ($/yr)<input id="dso" type="text" inputmode="decimal" step="any" placeholder="optional"></label>
+<label>Interest (%)<input id="rate" type="number" step="any" placeholder=""></label><label>Amort (yrs)<input id="amy" type="number" step="any" placeholder=""></label><label id="lr2">Rate after IO (%)<input id="rate2" type="number" step="any"></label><label id="lio">IO period (yrs)<input id="ioy" type="number"></label><label>Term (yrs)<input id="term" type="number" step="any" placeholder=""></label><label>Debt service override ($/yr)<input id="dso" type="text" inputmode="decimal" step="any" placeholder="optional"></label>
 <div class="ro"><span>LTV</span><b id="oLtv"></b></div><div class="ro"><span>Loan Payment Monthly</span><b id="oPmt"></b></div><div class="ro s"><span></span><b id="oPmt2"></b></div><div class="ro"><span>Balloon at term</span><b id="oBal"></b></div></div>
 <div><div class="sub">Refinance Loan</div><label>Refi at end of year (0 = none)<input id="ry" type="number" step="any" placeholder=""></label><label>Refi LTV of value (%)<input id="rltv" type="number" step="any" placeholder=""></label><label>Interest (%)<input id="rrate" type="number" step="any" placeholder=""></label>
 <label>Type<select id="rtype"><option value="am">Amortizing</option><option value="io">Interest-only</option></select></label><label>Amort (yrs)<input id="ramy" type="number" step="any" placeholder=""></label><label>Term (yrs)<input id="rterm" type="number" step="any" placeholder=""></label>
@@ -149,7 +149,7 @@ const I=v=>v==null||!isFinite(v)?'—':Math.round(v).toLocaleString('en-US');
 const sg=v=>v>0?'pos':v<0?'neg':'';
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const el=id=>document.getElementById(id);
-const F=['name','addr','prep','rev','units','pmode','price','capin','dpmode','down','ltv','cc','rate','amy','term','dtype','ioy','dso','ry','rltv','rrate','ramy','rterm','rtype','rcap','rbasis','rcost','impr','life','fed','st','vac','res','opx','reimb','inc','gmode','g','incy','opxy','start','hold'];
+const F=['rate2','name','addr','prep','rev','units','pmode','price','capin','dpmode','down','ltv','cc','rate','amy','term','dtype','ioy','dso','ry','rltv','rrate','ramy','rterm','rtype','rcap','rbasis','rcost','impr','life','fed','st','vac','res','opx','reimb','inc','gmode','g','incy','opxy','start','hold'];
 let DEF={},cur=null,demo=null,ret=null;
 const pn=v=>{v=String(v??'').replace(/[$,\s]/g,'');return v===''||v==='-'?null:+v};
 const num=id=>pn(el(id)?.value);
@@ -158,7 +158,7 @@ const fmtM=v=>{const n=pn(v);return n==null||!isFinite(n)?v:(n<0?'-':'')+Math.ab
 function fmtField(k){const e=el(k);if(!e||document.activeElement===e)return;if(MONEY.includes(k)||(k==='g'&&el('gmode').value==='usd'))e.value=e.value===''?'':fmtM(e.value);else if(MLIST.includes(k))e.value=lstv(e.value).map(fmtM).join('; ')}
 const lstv=s=>String(s||'').split(/;|,\s+|\s+/).map(x=>x.trim()).filter(x=>x!=='').map(x=>x.replace(/[$,]/g,''));
 const lst=id=>lstv(el(id).value).map(Number);
-function state(){const s={};F.forEach(k=>{if(el(k))s[k]=el(k).value});s.demo=demo;s.ret=ret;return s}
+function state(){const s={};F.forEach(k=>{if(el(k))s[k]=el(k).value});s.demo=demo;s.ret=ret;s._v=DEF.ver||0;return s}
 const MIG={noi:'inc',noiy:'incy'};
 function setState(s){s={...s};Object.entries(MIG).forEach(([o,n])=>{if(s[o]!=null&&s[n]==null)s[n]=s[o]});if(s.ltv==null&&s.dpmode==null)s.dpmode='ltv';
  F.forEach(k=>{if(el(k))el(k).value=s[k]??(el(k).tagName==='SELECT'?el(k).options[0].value:'')});el('addr2').value=s.addr||'';demo=s.demo||null;ret=s.ret||null;[...MONEY,...MLIST,'g'].forEach(fmtField);calc();renderLoc()}
@@ -174,9 +174,9 @@ function model(){
  const rate=(num('rate')||0)/100,amy=num('amy')||0,term=num('term')||0,dt=el('dtype').value,ioy=num('ioy')||0,dso=num('dso');
  const vcap=num('rcap')?num('rcap')/100:(price?n1/price:null),ry=num('ry')||0,warn=[];
  if(dt!=='io'&&!amy&&!dso)warn.push('Amortization blank: modeled as interest-only.');
- let S={bal:loan0,r:rate,type:dt,io:ioy,am:amy,k:0,pmt:dso!=null?dso:null},balloon=null,refi=null,rows=[];
- for(let y=1;y<=hold;y++){const l=L[y-1],int=S.bal*S.r;let ds;
-  if(S.pmt!=null&&S.fix!==false)ds=S.pmt;else if(S.type==='io'||!S.am||(S.type==='mx'&&S.k<S.io))ds=int;else{if(S.ap==null)S.ap=PMT(S.r,S.am,S.bal);ds=S.ap}
+ let S={bal:loan0,r:rate,r2:dt==='mx'&&num('rate2')!=null?num('rate2')/100:null,type:dt,io:ioy,am:amy,k:0,pmt:dso!=null?dso:null},balloon=null,refi=null,rows=[];
+ for(let y=1;y<=hold;y++){const l=L[y-1];if(S.type==='mx'&&S.r2!=null&&S.k>=S.io)S.r=S.r2;const int=S.bal*S.r;let ds;
+  if(S.pmt!=null&&S.fix!==false)ds=S.pmt;else if(S.type==='io'||!S.am||(S.type==='mx'&&S.k<S.io))ds=int;else{if(S.ap==null){if(S.type==='mx'&&S.r2!=null)S.r=S.r2;S.ap=PMT(S.r,S.am,S.bal)}ds=S.ap}
   const pr=Math.max(0,Math.min(S.bal,ds-int));S.bal-=pr;S.k++;if(!refi&&term&&y===term)balloon=S.bal;
   const val=vcap?l.noi/vcap:null;let co=null;const balY=S.bal;
   if(ry&&y===ry){const bn=el('rbasis').value==='fwd'&&L[y]?L[y].noi:l.noi,v=vcap?bn/vcap:0,nl=v*(num('rltv')||0)/100,cost=nl*(num('rcost')||0)/100;co=nl-cost-S.bal;
@@ -184,7 +184,7 @@ function model(){
    refi={y,val:v,nl,cost,payoff:S.bal,co,rate:rr,pmt:rt==='am'&&ra?PMT(rr,ra,nl):nl*rr};S={bal:nl,r:rr,type:rt==='am'&&ra?'am':'io',io:0,am:ra,k:0,pmt:null}}
   const cf=l.noi-ds;rows.push({y,yr:start+y-1,...l,ds:-ds,cf,cfm:cf/12,coc:inv?cf/inv:null,pr:-pr,bal:balY,cfp:cf+pr,tr:inv?(cf+pr)/inv:null,val,equity:val!=null?val-balY:null,ltv:val?balY/val:null,co,tot:cf+(co||0),toc:inv?(cf+(co||0))/inv:null,
    net:cf,noi:l.noi,dsP:ds,prP:pr})}
- const ioP=loan0*rate,amP=amy?(dt==='mx'?PMT(rate,amy,loan0):PMT(rate,amy,loan0)):null;
+ const ioP=loan0*rate,amP=amy?(dt==='mx'?PMT(num('rate2')!=null?num('rate2')/100:rate,amy,loan0):PMT(rate,amy,loan0)):null;
  const dep=price*(num('impr')??0)/100,life=num('life')||0;
  return {price,cap:price?n1/price:null,loan0,down,inv,ioP,amP,dt,rows,balloon,refi,warn,term,hold,vcap,dso,dep,adep:life?dep/life:null,ppu:num('units')?price/num('units'):null}}
 function card(l,v,s,c){return `<div class="card"><div class="l">${l}</div><div class="v ${c||''}">${v}</div>${s?`<div class="s">${s}</div>`:''}</div>`}
@@ -198,7 +198,7 @@ let M;
 function calc(){const m=M=model(),r1=m.rows[0]||{};
  el('lprice').style.display=el('pmode').value==='price'?'':'none';el('lcap').style.display=el('pmode').value==='cap'?'':'none';
  el('ldown').style.display=el('dpmode').value==='usd'?'':'none';el('lltv').style.display=el('dpmode').value==='ltv'?'':'none';
- const d=el('dtype').value;el('lio').style.display=d==='mx'?'':'none';
+ const d=el('dtype').value;el('lio').style.display=d==='mx'?'':'none';el('lr2').style.display=d==='mx'?'':'none';
  const pmt=-r1.ds/12;const pmtS=d==='mx'?`IO ${$0(m.ioP/12)} → amortizing ${$0(m.amP/12)}`:'';
  const o=(id,v)=>{const e=el(id);if(e)e.textContent=v};
  o('oLoan',$0(m.loan0));o('oDown',$0(m.down));o('oCap',P(m.cap));o('oLtv',P(m.price?m.loan0/m.price:null));o('oInv',$0(m.inv));o('oPmt',$0(pmt));o('oPmt2',pmtS);o('oBal',m.balloon!=null?$0(m.balloon):'—');o('oPpu',m.ppu?$0(m.ppu):'—');
@@ -316,7 +316,7 @@ function renderLoc(){const g=demo&&demo.geo;
 async function go(){try{DEF=await (await fetch('data.json',{cache:'no-store'})).json()}catch(e){DEF={props:[]}}
  el('app').style.display='';
  const s=store(),ver=DEF.ver||0;let changed=false;(DEF.props||[]).forEach(p=>{if(!s[p.name]||(s[p.name]._v||0)<ver){s[p.name]={...p,_v:ver,demo:s[p.name]?.demo,ret:s[p.name]?.ret};changed=true}});if(changed)localStorage.setItem('pcfa_props',JSON.stringify(s));
- let last=null;try{last=JSON.parse(localStorage.getItem('pcfa_last')||'null')}catch(e){}if(last&&last.inc==null)last=null;
+ let last=null;try{last=JSON.parse(localStorage.getItem('pcfa_last')||'null')}catch(e){}if(last&&(last.inc==null||(last._v||0)<ver))last=null;
  const first=last||s[DEF.props[0].name];cur=first.name;fillSaved(first.name);
  document.querySelectorAll('#tabs .pill').forEach(b=>b.onclick=()=>tab(b.dataset.t));
  F.forEach(k=>{const e=el(k);if(e){e.addEventListener('input',calc);e.addEventListener('change',calc);e.addEventListener('blur',()=>{fmtField(k)})}});el('gmode').addEventListener('change',()=>{fmtField('g')});el('addr').addEventListener('change',()=>{el('addr2').value=el('addr').value});
