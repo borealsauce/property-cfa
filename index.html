@@ -173,11 +173,11 @@ function model(){
  for(let y=1;y<=hold;y++){const l=L[y-1],int=S.bal*S.r;let ds;
   if(S.pmt!=null&&S.fix!==false)ds=S.pmt;else if(S.type==='io'||!S.am||(S.type==='mx'&&S.k<S.io))ds=int;else{if(S.ap==null)S.ap=PMT(S.r,S.am,S.bal);ds=S.ap}
   const pr=Math.max(0,Math.min(S.bal,ds-int));S.bal-=pr;S.k++;if(!refi&&term&&y===term)balloon=S.bal;
-  const val=vcap?l.noi/vcap:null;let co=null;
+  const val=vcap?l.noi/vcap:null;let co=null;const balY=S.bal;
   if(ry&&y===ry){const bn=el('rbasis').value==='fwd'&&L[y]?L[y].noi:l.noi,v=vcap?bn/vcap:0,nl=v*(num('rltv')||0)/100,cost=nl*(num('rcost')||0)/100;co=nl-cost-S.bal;
    const ra=num('ramy')||0,rt=el('rtype').value,rr=(num('rrate')||0)/100;if(rt==='am'&&!ra)warn.push('Refi amortization blank: refi loan modeled as interest-only.');
    refi={y,val:v,nl,cost,payoff:S.bal,co,rate:rr,pmt:rt==='am'&&ra?PMT(rr,ra,nl):nl*rr};S={bal:nl,r:rr,type:rt==='am'&&ra?'am':'io',io:0,am:ra,k:0,pmt:null}}
-  const cf=l.noi-ds;rows.push({y,yr:start+y-1,...l,ds:-ds,cf,cfm:cf/12,coc:inv?cf/inv:null,pr:-pr,bal:S.bal,cfp:cf+pr,tr:inv?(cf+pr)/inv:null,val,equity:val!=null?val-S.bal:null,ltv:val?S.bal/val:null,co,tot:cf+(co||0),toc:inv?(cf+(co||0))/inv:null,
+  const cf=l.noi-ds;rows.push({y,yr:start+y-1,...l,ds:-ds,cf,cfm:cf/12,coc:inv?cf/inv:null,pr:-pr,bal:balY,cfp:cf+pr,tr:inv?(cf+pr)/inv:null,val,equity:val!=null?val-balY:null,ltv:val?balY/val:null,co,tot:cf+(co||0),toc:inv?(cf+(co||0))/inv:null,
    net:cf,noi:l.noi,dsP:ds,prP:pr})}
  const ioP=loan0*rate,amP=amy?(dt==='mx'?PMT(rate,amy,loan0):PMT(rate,amy,loan0)):null;
  const dep=price*(num('impr')??0)/100,life=num('life')||0;
@@ -204,7 +204,7 @@ function calc(){const m=M=model(),r1=m.rows[0]||{};
  el('cvK').innerHTML=card('Price',$k(m.price))+card('NOI Yr 1',$0(r1.noi))+card('Cap Rate',P(m.cap))+card('Cash on Cash Yr 1',P(r1.coc),'',sg(r1.coc))+card('DSCR Yr 1',X2(r1.dsP?r1.noi/r1.dsP:null))+card('LTV',P(m.price?m.loan0/m.price:null));
  const yrs=m.rows;const tot=(k,t)=>{const v=yrs.map(r=>r[k]).filter(x=>x!=null&&isFinite(x));return t==='sum'?v.reduce((a,b)=>a+b,0):t==='avg'&&v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
  el('tGrid').innerHTML='<table class="grid"><thead><tr><th class="t">'+esc(el('name').value||'Line')+'</th>'+yrs.map(r=>`<th>${r.yr}<br><span class="yy">year ${r.y}</span></th>`).join('')+'<th>TOTAL/<br>AVG</th></tr></thead><tbody>'+
-  GRID.map(([l,k,f,t,c])=>`<tr class="${c||''}"><td class="t">${l}</td>`+yrs.map(r=>td(r[k],f,1).replace('<td',`<td${m.refi&&r.y===m.refi.y?' style="outline:1px dashed #e8b923"':''}`)).join('')+td(tot(k,t),f,1)+'</tr>').join('')+'</tbody></table>';
+  GRID.map(([l,k,f,t,c])=>`<tr class="${c||''}"><td class="t">${l}</td>`+yrs.map(r=>td(r[k],f,1)).join('')+td(tot(k,t),f,1)+'</tr>').join('')+'</tbody></table>';
  netChart('cNet',m.rows,m.refi?m.refi.y:null);netChart('cNet2',m.rows,m.refi?m.refi.y:null);
  chart('c1',m.rows,[['NOI','noi','#e8b923'],['Debt Service','dsP','#ff2d3a'],['Cash Flow','cf','#22c55e']],[['Cash on Cash','coc',P],['Refi Cash-Out','co',$0]]);
  chart('c2',m.rows,[['Value','val','#e8b923'],['Loan Balance','bal','#ff2d3a'],['Equity','equity','#22c55e']],[['LTV','ltv',P],['Principal Reduction','prP',$0]]);
@@ -221,12 +221,12 @@ function chart(id,rows,ser,extra){const W=640,H=260,pl=60,pb=26,n=rows.length;le
 function netChart(id,rows,refiY){const W=760,H=300,pl=60,pr=48,pb=26,pt=14,n=rows.length;const net=rows.map(r=>r.net),ds=rows.map(r=>r.ds),coc=rows.map(r=>r.coc||0);
  const all=[...net,...ds];const mx=Math.max(0,...all)*1.08||1,mn=Math.min(0,...all)*1.08;const sy=v=>pt+(H-pt-pb)*(mx-v)/(mx-mn||1),bw=(W-pl-pr)/n;
  const lmx=Math.max(0,...coc)*1.15||.01,lmn=Math.min(0,...coc)*1.15,ly=v=>pt+(H-pt-pb)*(lmx-v)/(lmx-lmn||1);let g='';
- rows.forEach((r,i)=>{if(r.y===refiY)g+=`<rect x="${pl+i*bw}" y="${pt}" width="${bw}" height="${H-pt-pb}" fill="#e8b92322" stroke="#e8b923" stroke-dasharray="4 3"/><text x="${pl+i*bw+bw/2}" y="${pt+12}" text-anchor="middle" style="fill:#e8b923;font-weight:700">REFI ${$k(r.co)}</text>`});
+ 
  for(let k=0;k<=4;k++){const v=mn+(mx-mn)*k/4,y=sy(v);g+=`<line x1="${pl}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="#262626"/><text x="${pl-6}" y="${y+4}" text-anchor="end">${$k(v)}</text>`;const lv=lmn+(lmx-lmn)*k/4;g+=`<text x="${W-pr+6}" y="${ly(lv)+4}">${(lv*100).toFixed(0)}%</text>`}
  rows.forEach((r,i)=>{[[net[i],'#22c55e'],[ds[i],'#ff2d3a']].forEach(([v,c],j)=>{const y0=sy(0),y=sy(v);g+=`<rect x="${pl+i*bw+bw*.12+j*bw*.38}" width="${bw*.38-2}" y="${Math.min(y,y0)}" height="${Math.abs(y0-y)}" fill="${v<0&&j===0?'#ff2d3a':c}" rx="2"/>`});g+=`<text x="${pl+i*bw+bw/2}" y="${H-8}" text-anchor="middle">Y${r.y}</text>`});
  g+=`<line x1="${pl}" x2="${W-pr}" y1="${sy(0)}" y2="${sy(0)}" stroke="#555"/><polyline fill="none" stroke="#e8b923" stroke-width="2.5" points="${coc.map((v,i)=>`${pl+i*bw+bw/2},${ly(v)}`).join(' ')}"/>`+coc.map((v,i)=>`<circle cx="${pl+i*bw+bw/2}" cy="${ly(v)}" r="3.5" fill="#e8b923"/>`).join('');
  rows.forEach((r,i)=>g+=`<rect class="hz" data-i="${i}" x="${pl+i*bw}" y="0" width="${bw}" height="${H}" fill="transparent"/>`);
- const box=el(id);box.innerHTML=`<svg viewBox="0 0 ${W} ${H}">${g}</svg><div class="muted" style="margin-top:6px"><span class="lg" style="background:#22c55e"></span>Net cash flow<span class="lg" style="background:#ff2d3a"></span>Debt service<span class="lg" style="background:#e8b923"></span>Cash on cash (right axis)${refiY?'<span class="lg" style="background:#e8b92355;border:1px dashed #e8b923"></span>Refi year':''}</div>`;
+ const box=el(id);box.innerHTML=`<svg viewBox="0 0 ${W} ${H}">${g}</svg><div class="muted" style="margin-top:6px"><span class="lg" style="background:#22c55e"></span>Net cash flow<span class="lg" style="background:#ff2d3a"></span>Debt service<span class="lg" style="background:#e8b923"></span>Cash on cash (right axis)</div>`;
  box.querySelectorAll('.hz').forEach(h=>{const show=e=>{const r=rows[+h.dataset.i],t=el('ctip');t.innerHTML=`<b>Year ${r.y}${r.y===refiY?' · Refi':''}</b><div><span>NOI</span><span>${$0(r.noi)}</span></div><div><span><i style="background:#ff2d3a"></i>Debt service</span><span>${$0(r.ds)}</span></div><div><span><i style="background:#22c55e"></i>Net cash flow</span><span>${$0(r.net)}</span></div><div><span><i style="background:#e8b923"></i>Cash on cash</span><span>${P(r.coc)}</span></div>`+(r.co!=null?`<div><span>Refi cash-out</span><span>${$0(r.co)}</span></div><div><span>Total CoC w/ refi</span><span>${P(r.toc)}</span></div>`:'');t.style.display='block';const p=e.touches?e.touches[0]:e;t.style.left=Math.min(innerWidth-220,p.clientX+14)+'px';t.style.top=(p.clientY+14)+'px'};
   h.addEventListener('mousemove',show);h.addEventListener('touchstart',show,{passive:true});h.addEventListener('mouseleave',()=>el('ctip').style.display='none')})}
 // ---- saves
