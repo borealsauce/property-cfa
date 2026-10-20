@@ -74,60 +74,72 @@ details{margin-top:8px;color:var(--muted)}summary{cursor:pointer;color:var(--gol
  .card .v,.card .l,h2,h1{color:#5a4500!important;-webkit-text-fill-color:#5a4500!important}.neg{color:#c00!important}.pos{color:#060!important}
  .mapbox{height:380px}.ctip{display:none!important}.chartbox text{fill:#333}h2{page-break-after:avoid}
  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+.sheet{background:linear-gradient(180deg,#141414,#0e0e0e);border:1px solid var(--gb);border-radius:1rem;padding:16px;margin-bottom:16px}
+.ttl{border:0;padding:0;margin:0 0 10px;font-size:24px;text-align:center}
+.hrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-bottom:10px}
+.hrow label,.box label{display:flex;flex-direction:column;gap:4px;font:600 10.5px Inter;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.boxes{display:grid;grid-template-columns:1fr 2fr 1fr 1fr;gap:12px;margin:8px 0 12px}@media(max-width:1100px){.boxes{grid-template-columns:1fr 1fr}}@media(max-width:640px){.boxes{grid-template-columns:1fr}}
+.box{background:#1a1a1a;border:1px solid var(--gb);border-radius:.8rem;padding:12px}.box.wide{margin-bottom:12px}
+.box h3{margin:-12px -12px 10px;padding:8px 12px;background:linear-gradient(180deg,#f5c518,#e8b923);color:#050505;font:700 12px Inter;letter-spacing:.12em;text-transform:uppercase;border-radius:.8rem .8rem 0 0;text-align:center}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.sub{font:700 11px Inter;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin:4px 0 8px;border-bottom:1px solid var(--gb);padding-bottom:4px}
+.box input,.box select,.hrow input,.hrow select{padding:6px 8px;font-size:13px}
+.ro{display:flex;justify-content:space-between;gap:8px;padding:5px 2px;border-top:1px dashed #2a2a2a;font-size:13px}.ro span{color:var(--muted)}.ro b{color:var(--gold);font-weight:700}.ro.s{border:0;padding-top:0}.ro.s b{font-size:11px;color:var(--muted)}
+.shead .ro{align-self:end;padding:8px}
+table.grid th{font-size:10px;padding:6px 7px}table.grid td{padding:5px 7px;font-size:12.5px}.yy{color:var(--muted);font-weight:500;text-transform:none}
+table.grid tr.b td{font-weight:700}table.grid tr.hl td{background:#e8b9231c!important;font-weight:800;border-top:1px solid var(--gb)}table.grid tr.hl td:first-child{color:var(--gold)}
+@media print{.sheet,.box{background:#fff!important;border-color:#c9a227!important}.box h3{background:#e8b923!important}.box input,.box select,.hrow input,.hrow select{border:0;background:#fff!important;color:#111;padding:0}.ro b{color:#5a4500!important}
+ section[data-s="A"]{page-break-after:always}table.grid td,table.grid th{font-size:8px;padding:2px 3px}.boxes{grid-template-columns:1fr 2fr 1fr 1fr}}
 </style>
 </head><body>
 <div class="top"><div class="wrap"><h1>Property CFA / OM</h1><div class="muted">Single-property cash flow analysis &amp; offering memorandum · updates live as you type</div></div></div>
 <div class="wrap" id="app" style="display:none">
 <div class="bar2 noprint">
  <select id="saved"></select><button class="pill" onclick="loadSel()">Load</button><button class="pill" onclick="saveCur()">Save</button><button class="pill" onclick="newProp()">New</button><button class="pill" onclick="delSel()">Delete</button>
- <button class="pill" onclick="exportX()">Export .xlsx</button><button class="pill" onclick="printOM()">Print / PDF</button>
+ <button class="pill" onclick="exportX()">Export .xlsx</button><button class="pill" onclick="emailIt()">Email</button><button class="pill" onclick="printOM()">Print / PDF</button>
 </div>
 <div class="cards strip" id="strip"></div>
-<div class="pills noprint" id="tabs"><button class="pill" data-t="P">1 · Property &amp; Income</button><button class="pill" data-t="D">2 · Debt</button><button class="pill" data-t="R">3 · Refi</button><button class="pill" data-t="L">4 · Location</button><button class="pill" data-t="O">5 · Results / OM</button></div>
-
+<div class="pills noprint" id="tabs"><button class="pill" data-t="A">Cash Flow Analysis</button><button class="pill" data-t="L">Location &amp; Demographics</button><button class="pill" data-t="O">Charts &amp; OM</button></div>
 <section data-s="O" class="cov"><div class="cover"><div><div class="muted">OFFERING MEMORANDUM</div><h1 id="cvName" class="shim" style="font-size:40px"></h1><div id="cvAddr" class="muted" style="font-size:15px"></div><div class="cards" id="cvK" style="margin-top:14px"></div></div><div id="map3" class="mapbox sm"></div></div>
  </section>
-<section data-s="P" class="frm">
- <div class="fg"><label>Property name<input id="name"></label><label>Address<input id="addr" placeholder="Street, City, ST"></label>
- <label>Price entry<select id="pmode"><option value="price">Purchase price</option><option value="cap">Cap rate → price</option></select></label>
- <label id="lprice">Purchase price ($)<input id="price" type="number"></label><label id="lcap">Cap rate (%)<input id="capin" type="number" step="0.01"></label>
- <label>NOI Year 1 ($/yr)<input id="noi" type="number"></label>
- <label>NOI annual increase type<select id="gmode"><option value="pct">%</option><option value="usd">$ per year</option></select></label>
- <label>NOI annual increase<input id="g" type="number" step="0.01"></label>
- <label class="wide">NOI by year override (optional, comma-separated)<input id="noiy" placeholder="e.g. 312984, 372350, …"></label>
- <label>Closing costs, reserves + CapEx ($) ($)<input id="cc" type="number"></label>
- <label>Hold years<input id="hold" type="number" min="1" max="30"></label></div>
- <details><summary>Optional: build NOI from rent &amp; expenses</summary><div class="fg">
- <label>Units / lots<input id="units" type="number"></label><label>Rent per unit ($/mo)<input id="rent" type="number"></label><label>Other income ($/mo)<input id="oth" type="number"></label><label>Vacancy (%)<input id="vac" type="number" step="0.1"></label><label>OpEx ($/mo)<input id="opx" type="number"></label><label>or OpEx (% of EGI)<input id="opxp" type="number" step="0.1"></label></div>
- <button class="pill" onclick="buildNOI()">Use as NOI</button> <span class="muted" id="bnoi"></span></details>
-</section>
-<section data-s="D" class="frm"><div class="fg">
- <label>LTV (%)<input id="ltv" type="number" step="0.1"></label><label>Interest rate (%)<input id="rate" type="number" step="0.01"></label>
- <label>Term (years)<input id="term" type="number"></label>
- <label>Debt type<select id="dtype"><option value="io">Interest-only</option><option value="am">Amortizing</option><option value="mx">Mixed (IO then amortizing)</option></select></label>
- <label id="lio">IO period (years)<input id="ioy" type="number"></label><label id="lam">Amortization (years)<input id="amy" type="number"></label>
- <label>Annual debt service override ($, optional)<input id="dso" type="number" placeholder="blank = calculated"></label></div>
- <div class="info" id="dinfo"></div></section>
-<section data-s="R" class="frm"><div class="fg">
- <label>Refi at end of year (0 = none)<input id="ry" type="number" min="0"></label><label>Valuation cap rate (%)<input id="rcap" type="number" step="0.01" placeholder="blank = purchase cap"></label>
- <label>Refi value based on<select id="rbasis"><option value="trail">Refi-year NOI (trailing)</option><option value="fwd">Next-year NOI (forward)</option></select></label><label>Refi LTV (%)<input id="rltv" type="number" step="0.1"></label><label>Refi rate (%)<input id="rrate" type="number" step="0.01"></label>
- <label>Refi type<select id="rtype"><option value="am">Amortizing</option><option value="io">Interest-only</option></select></label><label>Refi amortization (years)<input id="ramy" type="number"></label>
- <label>Refi costs (% of new loan)<input id="rcost" type="number" step="0.1"></label></div><div class="info" id="rinfo"></div></section>
-<section data-s="L"><div class="frm"><div class="fg"><label>Address<input id="addr2"></label></div><button class="pill" onclick="runLoc(true)">Look up address</button> <span class="muted" id="lstat"></span></div>
+<section data-s="A">
+<div class="sheet">
+<div class="shead"><h2 class="ttl">Cash Flow Analysis</h2>
+<div class="hrow"><label>Prepared For<input id="prep" type="text" step="any" placeholder=""></label><label>Last Revision<input id="rev" type="text" step="any" placeholder=""></label><label>Properties<input id="name" type="text" step="any" placeholder=""></label><label>Address<input id="addr" type="text" step="any" placeholder=""></label><label>Units (for price per unit)<input id="units" type="number" step="any" placeholder=""></label><div class="ro"><span>Price Per Unit</span><b id="oPpu"></b></div></div></div>
+<div class="boxes">
+<div class="box"><h3>Property Information</h3>
+<label>Price entry<select id="pmode"><option value="price">Purchase price</option><option value="cap">Cap rate → price</option></select></label>
+<label id="lprice">Purchase Price ($)<input id="price" type="number"></label><label id="lcap">Cap Rate target (%)<input id="capin" type="number" step="0.01"></label>
+<label>Down payment entry<select id="dpmode"><option value="ltv">LTV %</option><option value="usd">Down Payment $</option></select></label>
+<label id="lltv">LTV (%)<input id="ltv" type="number" step="any"></label><label id="ldown">Down Payment ($)<input id="down" type="number"></label>
+<label>Closing / Reserves / CapEx ($)<input id="cc" type="number" step="any" placeholder=""></label>
+<div class="ro"><span>Down Payment</span><b id="oDown"></b></div><div class="ro"><span>Loan Amount</span><b id="oLoan"></b></div><div class="ro"><span>Cap Rate</span><b id="oCap"></b></div><div class="ro"><span>Cash Invested</span><b id="oInv"></b></div></div>
+<div class="box"><h3>Loan Information</h3><div class="two"><div><div class="sub">Original Loan</div>
+<label>Debt type<select id="dtype"><option value="am">Amortizing</option><option value="io">Interest-only</option><option value="mx">Mixed (IO then amortizing)</option></select></label>
+<label>Interest (%)<input id="rate" type="number" step="any" placeholder=""></label><label>Amort (yrs)<input id="amy" type="number" step="any" placeholder=""></label><label id="lio">IO period (yrs)<input id="ioy" type="number"></label><label>Term (yrs)<input id="term" type="number" step="any" placeholder=""></label><label>Debt service override ($/yr)<input id="dso" type="number" step="any" placeholder="optional"></label>
+<div class="ro"><span>LTV</span><b id="oLtv"></b></div><div class="ro"><span>Loan Payment Monthly</span><b id="oPmt"></b></div><div class="ro s"><span></span><b id="oPmt2"></b></div><div class="ro"><span>Balloon at term</span><b id="oBal"></b></div></div>
+<div><div class="sub">Refinance Loan</div><label>Refi at end of year (0 = none)<input id="ry" type="number" step="any" placeholder=""></label><label>Refi LTV of value (%)<input id="rltv" type="number" step="any" placeholder=""></label><label>Interest (%)<input id="rrate" type="number" step="any" placeholder=""></label>
+<label>Type<select id="rtype"><option value="am">Amortizing</option><option value="io">Interest-only</option></select></label><label>Amort (yrs)<input id="ramy" type="number" step="any" placeholder=""></label><label>Term (yrs)<input id="rterm" type="number" step="any" placeholder=""></label>
+<label>Valuation cap (%)<input id="rcap" type="number" step="any" placeholder="blank = purchase cap"></label><label>Value based on<select id="rbasis"><option value="trail">Refi-year NOI</option><option value="fwd">Next-year NOI</option></select></label><label>Refi costs (% of loan)<input id="rcost" type="number" step="any" placeholder=""></label>
+<div class="ro"><span>Value at refi</span><b id="oRV"></b></div><div class="ro"><span>Loan Amount</span><b id="oRL"></b></div><div class="ro"><span>LTV (of purchase price)</span><b id="oRLtv"></b></div><div class="ro"><span>Net cash-out</span><b id="oRC"></b></div><div class="ro"><span>Loan Payment Monthly</span><b id="oRP"></b></div></div></div></div>
+<div class="box"><h3>Depreciation</h3><label>Improvement Ratio (%)<input id="impr" type="number" step="any" placeholder=""></label><div class="ro"><span>Depreciable Basis</span><b id="oDep"></b></div><label>Useful Life (yrs)<input id="life" type="number" step="any" placeholder=""></label><div class="ro"><span>Annual Depreciation</span><b id="oADep"></b></div></div>
+<div class="box"><h3>Tax Assumptions</h3><label>Federal Tax Rate (%)<input id="fed" type="number" step="any" placeholder=""></label><label>State Tax Rate (%)<input id="st" type="number" step="any" placeholder=""></label><div class="sub">Expenses</div><label>Vacancy (% of gross)<input id="vac" type="number" step="any" placeholder=""></label><label>Reserve (% of gross)<input id="res" type="number" step="any" placeholder=""></label><label>Operating Expenses (% of gross)<input id="opx" type="number" step="any" placeholder=""></label><label>Oper. Exp. Reimbursed (% of opex)<input id="reimb" type="number" step="any" placeholder=""></label></div>
+</div>
+<div class="box wide"><h3>Income</h3><div class="hrow"><label>Tenant / Gross Income Year 1 ($/yr)<input id="inc" type="number" step="any" placeholder=""></label><label>Annual increase type<select id="gmode"><option value="pct">%</option><option value="usd">$ per year</option></select></label><label>Annual increase<input id="g" type="number" step="any" placeholder=""></label><label>Start year<input id="start" type="number" step="any" placeholder=""></label><label>Years shown<input id="hold" type="number" step="any" placeholder=""></label></div>
+<div class="hrow"><label>Gross income by year (optional, comma-separated)<input id="incy" type="text" step="any" placeholder=""></label><label>Operating expense by year ($, optional, comma-separated)<input id="opxy" type="text" step="any" placeholder=""></label></div></div>
+<div class="muted neg" id="wn"></div>
+<div class="scroll" id="tGrid"></div>
+<h2>Net Cash Flow &amp; Cash on Cash</h2><div class="chartbox" id="cNet"></div>
+</div></section>
+<section data-s="L"><div class="frm noprint"><div class="fg"><label>Address<input id="addr2"></label></div><button class="pill" onclick="runLoc(true)">Look up address</button> <span class="muted" id="lstat"></span></div>
  <div class="grid2"><div><h2>Location · 1 / 3 / 5 Mile Rings</h2><div id="map" class="mapbox"></div></div><div><h2>Demographics</h2><div class="scroll" id="tDemo"></div><div class="muted" id="demoSrc"></div></div></div>
  <h2>Nearby Retail &amp; Amenities (3 mi)</h2><div id="map2" class="mapbox"></div><div class="muted" id="rstat"></div><div class="scroll" id="tRet"></div></section>
-<section data-s="O" class="fin"><h2>Net Cash Flow &amp; Cash-on-Cash</h2><div class="chartbox" id="cNet"></div><div class="grid2"><div><h2>NOI · Debt Service · Net Cash Flow</h2><div class="chartbox" id="c1"></div></div><div><h2>Value · Loan Balance · Equity</h2><div class="chartbox" id="c2"></div></div></div>
+<section data-s="O" class="fin"><h2>Net Cash Flow &amp; Cash-on-Cash</h2><div class="chartbox" id="cNet2"></div><div class="grid2"><div><h2>NOI · Debt Service · Net Cash Flow</h2><div class="chartbox" id="c1"></div></div><div><h2>Value · Loan Balance · Equity</h2><div class="chartbox" id="c2"></div></div></div>
  <h2>Debt &amp; Refi Summary</h2><div class="scroll" id="tDebt"></div>
  <h2>Projection by Year</h2><div class="scroll" id="tY"></div>
  </section><br></div>
 <div class="ctip" id="ctip"></div>
 
 <script>
-const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
-async function decrypt(pw){const e=await (await fetch('data.enc.json',{cache:'no-store'})).json();
- const km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);
- const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:b64(e.salt),iterations:e.iter,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['decrypt']);
- return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:b64(e.iv)},key,b64(e.ct))));}
 const $=v=>v==null||!isFinite(v)?'—':(v<0?'-':'')+'$'+Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 const $0=v=>v==null||!isFinite(v)?'—':(v<0?'-':'')+'$'+Math.abs(v).toLocaleString('en-US',{maximumFractionDigits:0});
 const $k=v=>!isFinite(v)?'—':(v<0?'-':'')+'$'+(Math.abs(v)>=1e6?(Math.abs(v)/1e6).toFixed(2)+'M':Math.abs(v)>=1e3?(Math.abs(v)/1e3).toFixed(0)+'K':Math.abs(v).toFixed(0));
@@ -137,63 +149,66 @@ const I=v=>v==null||!isFinite(v)?'—':Math.round(v).toLocaleString('en-US');
 const sg=v=>v>0?'pos':v<0?'neg':'';
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const el=id=>document.getElementById(id);
-const F=['name','addr','pmode','price','capin','noi','gmode','g','noiy','cc','hold','units','rent','oth','vac','opx','opxp','ltv','rate','term','dtype','ioy','amy','dso','ry','rcap','rbasis','rltv','rrate','rtype','ramy','rcost'];
+const F=['name','addr','prep','rev','units','pmode','price','capin','dpmode','down','ltv','cc','rate','amy','term','dtype','ioy','dso','ry','rltv','rrate','ramy','rterm','rtype','rcap','rbasis','rcost','impr','life','fed','st','vac','res','opx','reimb','inc','gmode','g','incy','opxy','start','hold'];
 let DEF={},cur=null,demo=null,ret=null;
 const num=id=>{const v=el(id)?.value;return v===''||v==null?null:+v};
+const lst=id=>(el(id).value||'').split(/[,\s]+/).filter(x=>x!=='').map(Number);
 function state(){const s={};F.forEach(k=>{if(el(k))s[k]=el(k).value});s.demo=demo;s.ret=ret;return s}
-function setState(s){F.forEach(k=>{if(el(k))el(k).value=s[k]??''});el('addr2').value=s.addr||'';demo=s.demo||null;ret=s.ret||null;calc();renderLoc()}
-function annuity(b,r,n){return r?b*r/(1-Math.pow(1+r,-n)):b/n}
+const MIG={noi:'inc',noiy:'incy'};
+function setState(s){s={...s};Object.entries(MIG).forEach(([o,n])=>{if(s[o]!=null&&s[n]==null)s[n]=s[o]});if(s.ltv==null&&s.dpmode==null)s.dpmode='ltv';
+ F.forEach(k=>{if(el(k))el(k).value=s[k]??(el(k).tagName==='SELECT'?el(k).options[0].value:'')});el('addr2').value=s.addr||'';demo=s.demo||null;ret=s.ret||null;calc();renderLoc()}
+const PMT=(r,n,pv)=>n?(r?pv*r/(1-Math.pow(1+r,-n)):pv/n):pv*r;
 function model(){
- const n1=num('noi')||0,hold=Math.max(1,Math.min(30,num('hold')||10));
- const price=el('pmode').value==='cap'?(num('capin')?n1/(num('capin')/100):0):(num('price')||0);
- const cap=price?n1/price:null;
- const ov=(el('noiy').value||'').split(/[,\s]+/).filter(x=>x!=='').map(Number);
- const g=num('g')||0,gm=el('gmode').value,noi=[];
- for(let y=1;y<=hold;y++){let v=ov[y-1]!=null&&isFinite(ov[y-1])?ov[y-1]:(y===1?n1:gm==='pct'?noi[y-2]*(1+g/100):noi[y-2]+g);noi.push(v)}
- const ltv=(num('ltv')||0)/100,loan0=price*ltv,down=price-loan0,eq=down+(num('cc')||0);
- const rate=(num('rate')||0)/100,term=num('term')||0,dt=el('dtype').value,ioy=num('ioy')||0,amy=num('amy')||0,dso=num('dso');
- const ioPmt=loan0*rate/12,amN=(dt==='mx'?amy:amy)*12,amPmt=amy?annuity(loan0,rate/12,amy*12):null;
- const vcap=num('rcap')?num('rcap')/100:cap,ry=num('ry')||0,warn=[];
- let L={bal:loan0,r:rate/12,type:dt,io:ioy*12,am:amy*12,m:0,pm:null,fixed:dso?dso/12:null},bal=loan0,balloon=null,refi=null,rows=[];
- if((dt==='am'||dt==='mx')&&!amy&&!dso)warn.push('Amortization years blank: modeled as interest-only.');
- for(let y=1;y<=hold;y++){let ds=0,pr=0;
-  for(let m=0;m<12;m++){const int=L.bal*L.r;let p;
-   if(L.fixed!=null)p=L.fixed;else if(L.type==='io'||!L.am||(L.type==='mx'&&L.m<L.io))p=int;else{if(L.pm==null)L.pm=annuity(L.bal,L.r,L.am);p=L.pm}
-   const pp=Math.max(0,Math.min(L.bal,p-int));L.bal-=pp;ds+=p;pr+=pp;L.m++;
-   if(!refi&&term&&y*12-12+m+1===term*12)balloon=L.bal}
-  let co=null;const val=vcap?noi[y-1]/vcap:null;
-  if(ry&&y===ry){const bn=el('rbasis').value==='fwd'&&noi[y]!=null?noi[y]:noi[y-1];const v=vcap?bn/vcap:0,nl=v*(num('rltv')||0)/100,cost=nl*(num('rcost')||0)/100;
-   co=nl-cost-L.bal;const rt=el('rtype').value,ra=num('ramy')||0;if(rt==='am'&&!ra)warn.push('Refi amortization blank: refi loan modeled as interest-only.');
-   refi={y,val:v,nl,cost,payoff:L.bal,co,rate:num('rrate'),io:(num('rrate')||0)/1200*nl,am:ra&&rt==='am'?annuity(nl,(num('rrate')||0)/1200,ra*12):null};
-   L={bal:nl,r:(num('rrate')||0)/1200,type:rt==='am'&&ra?'am':'io',io:0,am:ra*12,m:0,pm:null,fixed:null}}
-  const net=noi[y-1]-ds;rows.push({y,noi:noi[y-1],ds,dscr:ds?noi[y-1]/ds:null,net,netm:net/12,coc:eq?net/eq:null,pr,bal:L.bal,val,equity:val!=null?val-L.bal:null,ltv:val?L.bal/val:null,co,tot:net+(co||0),toc:eq?(net+(co||0))/eq:null})}
- if(balloon==null&&term&&term<=hold&&refi&&refi.y<term)balloon=null;
- return {price,cap,loan0,down,eq,ioPmt,amPmt,dt,rows,balloon,refi,warn,term,hold,vcap,dso}}
+ const hold=Math.max(1,Math.min(30,num('hold')||15)),start=num('start')||new Date().getFullYear();
+ const iv=lst('incy'),ov=lst('opxy'),g=num('g')||0,gm=el('gmode').value,gross=[];
+ for(let y=0;y<hold;y++){gross.push(isFinite(iv[y])?iv[y]:y===0?(num('inc')||0):gm==='pct'?gross[y-1]*(1+g/100):gross[y-1]+g)}
+ const vac=(num('vac')||0)/100,res=(num('res')||0)/100,opx=(num('opx')||0)/100,rb=(num('reimb')||0)/100;
+ const L=gross.map((gi,y)=>{const v=-gi*vac,r=-gi*res,agi=gi+v+r,ox=-(isFinite(ov[y])?ov[y]:gi*opx),re=-ox*rb;return {gi,v,r,agi,ox,re,noi:agi+ox+re}});
+ const n1=L[0].noi;const price=el('pmode').value==='cap'?(num('capin')?n1/(num('capin')/100):0):(num('price')||0);
+ const loan0=el('dpmode').value==='usd'?Math.max(0,price-(num('down')||0)):price*(num('ltv')||0)/100,down=price-loan0,inv=down+(num('cc')||0);
+ const rate=(num('rate')||0)/100,amy=num('amy')||0,term=num('term')||0,dt=el('dtype').value,ioy=num('ioy')||0,dso=num('dso');
+ const vcap=num('rcap')?num('rcap')/100:(price?n1/price:null),ry=num('ry')||0,warn=[];
+ if(dt!=='io'&&!amy&&!dso)warn.push('Amortization blank: modeled as interest-only.');
+ let S={bal:loan0,r:rate,type:dt,io:ioy,am:amy,k:0,pmt:dso!=null?dso:null},balloon=null,refi=null,rows=[];
+ for(let y=1;y<=hold;y++){const l=L[y-1],int=S.bal*S.r;let ds;
+  if(S.pmt!=null&&S.fix!==false)ds=S.pmt;else if(S.type==='io'||!S.am||(S.type==='mx'&&S.k<S.io))ds=int;else{if(S.ap==null)S.ap=PMT(S.r,S.am,S.bal);ds=S.ap}
+  const pr=Math.max(0,Math.min(S.bal,ds-int));S.bal-=pr;S.k++;if(!refi&&term&&y===term)balloon=S.bal;
+  const val=vcap?l.noi/vcap:null;let co=null;
+  if(ry&&y===ry){const bn=el('rbasis').value==='fwd'&&L[y]?L[y].noi:l.noi,v=vcap?bn/vcap:0,nl=v*(num('rltv')||0)/100,cost=nl*(num('rcost')||0)/100;co=nl-cost-S.bal;
+   const ra=num('ramy')||0,rt=el('rtype').value,rr=(num('rrate')||0)/100;if(rt==='am'&&!ra)warn.push('Refi amortization blank: refi loan modeled as interest-only.');
+   refi={y,val:v,nl,cost,payoff:S.bal,co,rate:rr,pmt:rt==='am'&&ra?PMT(rr,ra,nl):nl*rr};S={bal:nl,r:rr,type:rt==='am'&&ra?'am':'io',io:0,am:ra,k:0,pmt:null}}
+  const cf=l.noi-ds;rows.push({y,yr:start+y-1,...l,ds:-ds,cf,cfm:cf/12,coc:inv?cf/inv:null,pr:-pr,bal:S.bal,cfp:cf+pr,tr:inv?(cf+pr)/inv:null,val,equity:val!=null?val-S.bal:null,ltv:val?S.bal/val:null,co,tot:cf+(co||0),toc:inv?(cf+(co||0))/inv:null,
+   net:cf,noi:l.noi,dsP:ds,prP:pr})}
+ const ioP=loan0*rate,amP=amy?(dt==='mx'?PMT(rate,amy,loan0):PMT(rate,amy,loan0)):null;
+ const dep=price*(num('impr')??0)/100,life=num('life')||0;
+ return {price,cap:price?n1/price:null,loan0,down,inv,ioP,amP,dt,rows,balloon,refi,warn,term,hold,vcap,dso,dep,adep:life?dep/life:null,ppu:num('units')?price/num('units'):null}}
 function card(l,v,s,c){return `<div class="card"><div class="l">${l}</div><div class="v ${c||''}">${v}</div>${s?`<div class="s">${s}</div>`:''}</div>`}
-function table(id,head,rows,foot){el(id).innerHTML='<table><thead><tr>'+head.map((x,i)=>`<th${i?'':' class="t"'}>${x}</th>`).join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.join('')+'</tr>').join('')+'</tbody>'+(foot?'<tfoot><tr class="ft">'+foot.join('')+'</tr></tfoot>':'')+'</table>'}
+function table(id,head,rows,foot){el(id).innerHTML='<table><thead><tr>'+head.map((x,i)=>`<th${i?'':' class="t"'}>${x}</th>`).join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr'+(r.cls?` class="${r.cls}"`:'')+'>'+r.join('')+'</tr>').join('')+'</tbody>'+(foot?'<tfoot><tr class="ft">'+foot.join('')+'</tr></tfoot>':'')+'</table>'}
 const td=(v,f,c)=>v==null||!isFinite(v)?'<td data-v="">—</td>':`<td data-v="${v}" class="${c?sg(v):''}">${f(v)}</td>`;
 const tt=s=>`<td class="t">${esc(s)}</td>`;
+const GRID=[['Gross Income','gi',$0,'sum','b'],['Vacancy','v',$0,'sum'],['Reserves','r',$0,'sum'],['Annual Gross Income','agi',$0,'sum','b'],['Operating Expense','ox',$0,'sum'],['Oper. Exp. Reimbursed','re',$0,'sum'],['Net Operating Income','noi',$0,'sum','hl'],['Debt Service','ds',$0,'sum'],
+ ['Cash Flow (Annual)','cf',$0,'sum','hl'],['Cash Flow (Monthly)','cfm',$0,'sum','b'],['Cash on Cash Return','coc',P,'avg','hl'],['Principal Reduction','pr',$0,'sum'],['Year End Loan Balance','bal',$0,''],['Cash Flow + Prin. Reduc.','cfp',$0,'sum','b'],['Total Return on Invest.','tr',P,'avg','hl'],
+ ['Property Value (at cap)','val',$0,''],['Equity','equity',$0,''],['LTV','ltv',P,''],['Refi Cash-Out','co',$0,'sum']];
 let M;
 function calc(){const m=M=model(),r1=m.rows[0]||{};
  el('lprice').style.display=el('pmode').value==='price'?'':'none';el('lcap').style.display=el('pmode').value==='cap'?'':'none';
- const d=el('dtype').value;el('lio').style.display=d==='mx'?'':'none';el('lam').style.display=d==='io'?'none':'';
- const pmt=m.dso?m.dso/12:d==='io'?m.ioPmt:d==='am'?(m.amPmt??m.ioPmt):m.ioPmt;
- const pmtS=d==='mx'?`IO ${$0(m.ioPmt)} → amortizing ${$0(m.amPmt)}`:'';
- el('strip').innerHTML=card('Price',$k(m.price))+card('NOI Yr 1',$0(r1.noi))+card('Cap Rate',P(m.cap))+card('Loan Payment Monthly',$0(pmt),pmtS)+card('DSCR Yr 1',X2(r1.dscr),'',r1.dscr<1.2?'neg':'pos')+card('Net Cash Flow Monthly',$0(r1.netm),$0(r1.net)+'/yr',sg(r1.net))+card('Cash-on-Cash Yr 1',P(r1.coc),'',sg(r1.coc))+card('LTV',P(m.price?m.loan0/m.price:null));
- el('dinfo').innerHTML=`<span>Loan <b>${$0(m.loan0)}</b></span><span>Down payment <b>${$0(m.down)}</b></span><span>Total equity (incl. closing/CapEx) <b>${$0(m.eq)}</b></span><span>IO payment <b>${$0(m.ioPmt)}</b>/mo</span>${m.amPmt?`<span>Amortizing payment <b>${$0(m.amPmt)}</b>/mo</span>`:''}<span>Balloon at term end <b>${m.balloon!=null?$0(m.balloon):'—'}</b></span>`+m.warn.map(w=>`<span class="neg">${w}</span>`).join('');
- el('rinfo').innerHTML=m.refi?`<span>Value at refi <b>${$0(m.refi.val)}</b></span><span>New loan <b>${$0(m.refi.nl)}</b></span><span>Costs <b>${$0(m.refi.cost)}</b></span><span>Payoff <b>${$0(m.refi.payoff)}</b></span><span>Net cash-out <b class="${sg(m.refi.co)}">${$0(m.refi.co)}</b></span><span>New payment <b>${$0(m.refi.am??m.refi.io)}</b>/mo</span>`:'<span>No refi modeled</span>';
+ el('ldown').style.display=el('dpmode').value==='usd'?'':'none';el('lltv').style.display=el('dpmode').value==='ltv'?'':'none';
+ const d=el('dtype').value;el('lio').style.display=d==='mx'?'':'none';
+ const pmt=-r1.ds/12;const pmtS=d==='mx'?`IO ${$0(m.ioP/12)} → amortizing ${$0(m.amP/12)}`:'';
+ const o=(id,v)=>{const e=el(id);if(e)e.textContent=v};
+ o('oLoan',$0(m.loan0));o('oDown',$0(m.down));o('oCap',P(m.cap));o('oLtv',P(m.price?m.loan0/m.price:null));o('oInv',$0(m.inv));o('oPmt',$0(pmt));o('oPmt2',pmtS);o('oBal',m.balloon!=null?$0(m.balloon):'—');o('oPpu',m.ppu?$0(m.ppu):'—');
+ o('oRL',m.refi?$0(m.refi.nl):'—');o('oRV',m.refi?$0(m.refi.val):'—');o('oRC',m.refi?$0(m.refi.co):'—');o('oRP',m.refi?$0(m.refi.pmt/12):'—');o('oRLtv',m.refi&&m.price?P(m.refi.nl/m.price):'—');
+ o('oDep',$0(m.dep));o('oADep',m.adep!=null?$0(m.adep):'—');o('wn',m.warn.join(' '));
+ el('strip').innerHTML=card('Price',$k(m.price))+card('NOI Yr 1',$0(r1.noi))+card('Cap Rate',P(m.cap))+card('Loan Payment Monthly',$0(pmt),pmtS)+card('DSCR Yr 1',X2(r1.dsP?r1.noi/r1.dsP:null),'',r1.dsP&&r1.noi/r1.dsP<1.2?'neg':'pos')+card('Cash Flow Monthly',$0(r1.cfm),$0(r1.cf)+'/yr',sg(r1.cf))+card('Cash on Cash Yr 1',P(r1.coc),'',sg(r1.coc))+card('LTV',P(m.price?m.loan0/m.price:null));
  el('cvName').textContent=el('name').value||'Untitled Property';el('cvAddr').textContent=el('addr').value;
- el('cvK').innerHTML=card('Price',$k(m.price))+card('NOI Yr 1',$0(r1.noi))+card('Cap Rate',P(m.cap))+card('Cash-on-Cash Yr 1',P(r1.coc),'',sg(r1.coc))+card('DSCR Yr 1',X2(r1.dscr))+card('LTV',P(m.price?m.loan0/m.price:null));
- table('tY',['Year','NOI','Debt Service','DSCR','Net Cash Flow Annual','Net Cash Flow Monthly','Cash-on-Cash','Principal Paydown','Loan Balance','Value','Equity','LTV','Refi Cash-Out','Total Cash Flow','Total CoC'],
-  m.rows.map(r=>[`<td class="t" data-v="${r.y}">Year ${r.y}</td>`,td(r.noi,$0),td(r.ds,$0),td(r.dscr,X2),td(r.net,$0,1),td(r.netm,$0,1),td(r.coc,P,1),td(r.pr,$0),td(r.bal,$0),td(r.val,$0),td(r.equity,$0,1),td(r.ltv,P),td(r.co,$0,1),td(r.tot,$0,1),td(r.toc,P,1)]),
-  ['<td class="t">TOTAL</td>',td(sum(m.rows,'noi'),$0),td(sum(m.rows,'ds'),$0),'<td></td>',td(sum(m.rows,'net'),$0,1),'<td></td><td></td>',td(sum(m.rows,'pr'),$0),'<td></td><td></td><td></td><td></td>',td(sum(m.rows,'co'),$0,1),td(sum(m.rows,'tot'),$0,1),'<td></td>']);
- const dr=[['Purchase price',m.price,$0],['Loan amount',m.loan0,$0],['Down payment',m.down,$0],['Total equity',m.eq,$0],['Interest rate',num('rate')/100,P],['Term (years)',m.term,I],['IO payment monthly',m.ioPmt,$0],['Amortizing payment monthly',m.amPmt,$0],['Balloon at term end',m.balloon,$0]];
- if(m.refi)dr.push(['Refi year',m.refi.y,I],['Refi value',m.refi.val,$0],['Refi loan',m.refi.nl,$0],['Refi costs',m.refi.cost,$0],['Refi net cash-out',m.refi.co,$0],['Refi rate',m.refi.rate/100,P],['Refi payment monthly',m.refi.am??m.refi.io,$0]);
- table('tDebt',['Item','Value'],dr.map(([a,v,f])=>[tt(a),td(v,f)]));
- netChart('cNet',m.rows,m.refi?m.refi.y:null);
- chart('c1',m.rows,[['NOI','noi','#e8b923'],['Debt Service','ds','#ff2d3a'],['Net Cash Flow','net','#22c55e']],[['Cash-on-Cash','coc',P],['Refi Cash-Out','co',$0]]);
- chart('c2',m.rows,[['Value','val','#e8b923'],['Loan Balance','bal','#ff2d3a'],['Equity','equity','#22c55e']],[['LTV','ltv',P],['Principal Paydown','pr',$0]]);
- if(cur)try{localStorage.setItem('pcfa_last',JSON.stringify(state()))}catch(e){}}
+ el('cvK').innerHTML=card('Price',$k(m.price))+card('NOI Yr 1',$0(r1.noi))+card('Cap Rate',P(m.cap))+card('Cash on Cash Yr 1',P(r1.coc),'',sg(r1.coc))+card('DSCR Yr 1',X2(r1.dsP?r1.noi/r1.dsP:null))+card('LTV',P(m.price?m.loan0/m.price:null));
+ const yrs=m.rows;const tot=(k,t)=>{const v=yrs.map(r=>r[k]).filter(x=>x!=null&&isFinite(x));return t==='sum'?v.reduce((a,b)=>a+b,0):t==='avg'&&v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
+ el('tGrid').innerHTML='<table class="grid"><thead><tr><th class="t">'+esc(el('name').value||'Line')+'</th>'+yrs.map(r=>`<th>${r.yr}<br><span class="yy">year ${r.y}</span></th>`).join('')+'<th>TOTAL/<br>AVG</th></tr></thead><tbody>'+
+  GRID.filter(([,k])=>k!=='co'||m.refi).map(([l,k,f,t,c])=>`<tr class="${c||''}${m.refi&&k==='co'?' hl':''}"><td class="t">${l}</td>`+yrs.map(r=>td(r[k],f,1).replace('<td',`<td${m.refi&&r.y===m.refi.y?' style="outline:1px dashed #e8b923"':''}`)).join('')+td(tot(k,t),f,1)+'</tr>').join('')+'</tbody></table>';
+ netChart('cNet',m.rows,m.refi?m.refi.y:null);netChart('cNet2',m.rows,m.refi?m.refi.y:null);
+ chart('c1',m.rows,[['NOI','noi','#e8b923'],['Debt Service','dsP','#ff2d3a'],['Cash Flow','cf','#22c55e']],[['Cash on Cash','coc',P],['Refi Cash-Out','co',$0]]);
+ chart('c2',m.rows,[['Value','val','#e8b923'],['Loan Balance','bal','#ff2d3a'],['Equity','equity','#22c55e']],[['LTV','ltv',P],['Principal Reduction','prP',$0]]);
+ try{localStorage.setItem('pcfa_last',JSON.stringify(state()))}catch(e){}}
 const sum=(a,k)=>a.reduce((s,x)=>s+(x[k]||0),0);
 function chart(id,rows,ser,extra){const W=640,H=260,pl=60,pb=26,n=rows.length;let mx=0,mn=0;rows.forEach(r=>ser.forEach(s=>{const v=r[s[1]]||0;mx=Math.max(mx,v);mn=Math.min(mn,v)}));if(mx===mn)mx=1;
  const y=v=>10+(mx-v)/(mx-mn)*(H-pb-10),gw=(W-pl-10)/n,bw=gw*.8/ser.length;let s=`<svg viewBox="0 0 ${W} ${H}">`;
@@ -203,7 +218,7 @@ function chart(id,rows,ser,extra){const W=640,H=260,pl=60,pb=26,n=rows.length;le
  s+='</svg><div class="muted">'+ser.map(x=>`<span class="lg" style="background:${x[2]}"></span>${x[0]}`).join('')+'</div>';const box=el(id);box.innerHTML=s;
  box.querySelectorAll('.hz').forEach(h=>{const show=e=>{const r=rows[+h.dataset.i],t=el('ctip');t.innerHTML=`<b>Year ${r.y}</b>`+ser.map(x=>`<div><span><i style="background:${x[2]}"></i>${x[0]}</span><span>${$0(r[x[1]])}</span></div>`).join('')+extra.map(x=>`<div><span>${x[0]}</span><span>${r[x[1]]==null?'—':x[2](r[x[1]])}</span></div>`).join('');t.style.display='block';const p=e.touches?e.touches[0]:e;t.style.left=Math.min(innerWidth-200,p.clientX+14)+'px';t.style.top=(p.clientY+14)+'px'};
   h.addEventListener('mousemove',show);h.addEventListener('touchstart',show,{passive:true});h.addEventListener('mouseleave',()=>el('ctip').style.display='none')})}
-function netChart(id,rows,refiY){const W=760,H=300,pl=60,pr=48,pb=26,pt=14,n=rows.length;const net=rows.map(r=>r.net),ds=rows.map(r=>-r.ds),coc=rows.map(r=>r.coc||0);
+function netChart(id,rows,refiY){const W=760,H=300,pl=60,pr=48,pb=26,pt=14,n=rows.length;const net=rows.map(r=>r.net),ds=rows.map(r=>r.ds),coc=rows.map(r=>r.coc||0);
  const all=[...net,...ds];const mx=Math.max(0,...all)*1.08||1,mn=Math.min(0,...all)*1.08;const sy=v=>pt+(H-pt-pb)*(mx-v)/(mx-mn||1),bw=(W-pl-pr)/n;
  const lmx=Math.max(0,...coc)*1.15||.01,lmn=Math.min(0,...coc)*1.15,ly=v=>pt+(H-pt-pb)*(lmx-v)/(lmx-lmn||1);let g='';
  rows.forEach((r,i)=>{if(r.y===refiY)g+=`<rect x="${pl+i*bw}" y="${pt}" width="${bw}" height="${H-pt-pb}" fill="#e8b92322" stroke="#e8b923" stroke-dasharray="4 3"/><text x="${pl+i*bw+bw/2}" y="${pt+12}" text-anchor="middle" style="fill:#e8b923;font-weight:700">REFI ${$k(r.co)}</text>`});
@@ -212,28 +227,35 @@ function netChart(id,rows,refiY){const W=760,H=300,pl=60,pr=48,pb=26,pt=14,n=row
  g+=`<line x1="${pl}" x2="${W-pr}" y1="${sy(0)}" y2="${sy(0)}" stroke="#555"/><polyline fill="none" stroke="#e8b923" stroke-width="2.5" points="${coc.map((v,i)=>`${pl+i*bw+bw/2},${ly(v)}`).join(' ')}"/>`+coc.map((v,i)=>`<circle cx="${pl+i*bw+bw/2}" cy="${ly(v)}" r="3.5" fill="#e8b923"/>`).join('');
  rows.forEach((r,i)=>g+=`<rect class="hz" data-i="${i}" x="${pl+i*bw}" y="0" width="${bw}" height="${H}" fill="transparent"/>`);
  const box=el(id);box.innerHTML=`<svg viewBox="0 0 ${W} ${H}">${g}</svg><div class="muted" style="margin-top:6px"><span class="lg" style="background:#22c55e"></span>Net cash flow<span class="lg" style="background:#ff2d3a"></span>Debt service<span class="lg" style="background:#e8b923"></span>Cash on cash (right axis)${refiY?'<span class="lg" style="background:#e8b92355;border:1px dashed #e8b923"></span>Refi year':''}</div>`;
- box.querySelectorAll('.hz').forEach(h=>{const show=e=>{const r=rows[+h.dataset.i],t=el('ctip');t.innerHTML=`<b>Year ${r.y}${r.y===refiY?' · Refi':''}</b><div><span>NOI</span><span>${$0(r.noi)}</span></div><div><span><i style="background:#ff2d3a"></i>Debt service</span><span>${$0(-r.ds)}</span></div><div><span><i style="background:#22c55e"></i>Net cash flow</span><span>${$0(r.net)}</span></div><div><span><i style="background:#e8b923"></i>Cash on cash</span><span>${P(r.coc)}</span></div>`+(r.co!=null?`<div><span>Refi cash-out</span><span>${$0(r.co)}</span></div><div><span>Total CoC w/ refi</span><span>${P(r.toc)}</span></div>`:'');t.style.display='block';const p=e.touches?e.touches[0]:e;t.style.left=Math.min(innerWidth-220,p.clientX+14)+'px';t.style.top=(p.clientY+14)+'px'};
+ box.querySelectorAll('.hz').forEach(h=>{const show=e=>{const r=rows[+h.dataset.i],t=el('ctip');t.innerHTML=`<b>Year ${r.y}${r.y===refiY?' · Refi':''}</b><div><span>NOI</span><span>${$0(r.noi)}</span></div><div><span><i style="background:#ff2d3a"></i>Debt service</span><span>${$0(r.ds)}</span></div><div><span><i style="background:#22c55e"></i>Net cash flow</span><span>${$0(r.net)}</span></div><div><span><i style="background:#e8b923"></i>Cash on cash</span><span>${P(r.coc)}</span></div>`+(r.co!=null?`<div><span>Refi cash-out</span><span>${$0(r.co)}</span></div><div><span>Total CoC w/ refi</span><span>${P(r.toc)}</span></div>`:'');t.style.display='block';const p=e.touches?e.touches[0]:e;t.style.left=Math.min(innerWidth-220,p.clientX+14)+'px';t.style.top=(p.clientY+14)+'px'};
   h.addEventListener('mousemove',show);h.addEventListener('touchstart',show,{passive:true});h.addEventListener('mouseleave',()=>el('ctip').style.display='none')})}
-function buildNOI(){const u=num('units')||0,r=num('rent')||0,o=num('oth')||0,v=(num('vac')||0)/100;const egi=(u*r*(1-v)+o);const ox=num('opx')!=null?num('opx'):egi*(num('opxp')||0)/100;const n=(egi-ox)*12;el('bnoi').textContent=`EGI ${$0(egi)}/mo · OpEx ${$0(ox)}/mo · NOI ${$0(n)}/yr`;if(isFinite(n)){el('noi').value=Math.round(n*100)/100;calc()}}
 // ---- saves
 const store=()=>{try{return JSON.parse(localStorage.getItem('pcfa_props')||'{}')}catch(e){return {}}};
 function fillSaved(sel){const s=store();el('saved').innerHTML=Object.keys(s).map(k=>`<option ${k===sel?'selected':''}>${esc(k)}</option>`).join('')}
 function saveCur(){const s=store(),st=state(),k=st.name||'Untitled';s[k]=st;localStorage.setItem('pcfa_props',JSON.stringify(s));cur=k;fillSaved(k)}
 function loadSel(){const k=el('saved').value,s=store()[k];if(s){cur=k;setState(s)}}
 function delSel(){const k=el('saved').value;if(!k||!confirm('Delete '+k+' from this browser?'))return;const s=store();delete s[k];localStorage.setItem('pcfa_props',JSON.stringify(s));fillSaved()}
-function newProp(){cur='new';setState({pmode:'price',gmode:'pct',hold:10,dtype:'am',rtype:'am',rbasis:'trail'});}
-// ---- export
-function exportX(){const m=M,wb=XLSX.utils.book_new(),nm=el('name').value||'Property';
- const inp=F.filter(k=>el(k)&&el(k).value!=='').map(k=>[el(k).closest('label')?el(k).closest('label').firstChild.textContent.trim():k,isNaN(+el(k).value)||el(k).tagName==='SELECT'?el(k).value:+el(k).value]);
- const s1=XLSX.utils.aoa_to_sheet([['Input','Value'],...inp]);XLSX.utils.book_append_sheet(wb,s1,'Inputs');
- const H=['Year','NOI','Debt Service','DSCR','Net Cash Flow Annual','Net Cash Flow Monthly','Cash-on-Cash','Principal Paydown','Loan Balance','Value','Equity','LTV','Refi Cash-Out','Total Cash Flow'];
- const s2=XLSX.utils.aoa_to_sheet([H,...m.rows.map(r=>[r.y,r.noi,r.ds,r.dscr,r.net,r.netm,r.coc,r.pr,r.bal,r.val,r.equity,r.ltv,r.co,r.tot])]);
- const rg=XLSX.utils.decode_range(s2['!ref']);for(let R=1;R<=rg.e.r;R++)for(let C=1;C<=13;C++){const c=s2[XLSX.utils.encode_cell({r:R,c:C})];if(c&&c.t==='n')c.z=[3].includes(C)?'0.00"x"':[6,11].includes(C)?'0.00%':'#,##0.00'}
- s2['!cols']=H.map(h=>({wch:Math.max(12,h.length+2)}));XLSX.utils.book_append_sheet(wb,s2,'Projection');
- const sm=[['Metric','Value'],['Purchase Price',m.price],['Cap Rate',m.cap],['Loan',m.loan0],['Down Payment',m.down],['Total Equity',m.eq],['Loan Payment Monthly (IO)',m.ioPmt],['Loan Payment Monthly (Amortizing)',m.amPmt],['Balloon at Term End',m.balloon]];
- if(m.refi)sm.push(['Refi Year',m.refi.y],['Refi Value',m.refi.val],['Refi Loan',m.refi.nl],['Refi Net Cash-Out',m.refi.co]);XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(sm),'Summary');
- if(demo&&demo.rings){XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Metric','1 Mile','3 Miles','5 Miles'],...DM.map(([l,k])=>[l,...demo.rings.map(r=>r[k]??null)]),['Source',demo.src]]),'Demographics')}
- if(ret&&ret.items){XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Name','Brand','Category','Miles'],...ret.items.map(x=>[x.n,x.b||'',x.c,+x.d.toFixed(2)])]),'Nearby Retail')}
+function newProp(){cur='new';setState({pmode:'price',dpmode:'ltv',gmode:'pct',hold:15,dtype:'am',rtype:'am',rbasis:'trail',life:'39.5',impr:'80',start:String(new Date().getFullYear())})}
+function emailIt(){const m=M,r=m.rows[0]||{},n=el('name').value||'Property';const b=[`${n}${el('addr').value?' — '+el('addr').value:''}`,'',`Purchase Price: ${$0(m.price)}`,`Down Payment: ${$0(m.down)}`,`Loan Amount: ${$0(m.loan0)}`,`Cap Rate: ${P(m.cap)}`,`NOI Year 1: ${$0(r.noi)}`,`Loan Payment Monthly: ${$0(-r.ds/12)}`,`Cash Flow (Annual): ${$0(r.cf)}`,`Cash Flow (Monthly): ${$0(r.cfm)}`,`Cash on Cash Return Yr 1: ${P(r.coc)}`,`Total Return on Invest. Yr 1: ${P(r.tr)}`,'',location.href].join('\n');
+ location.href='mailto:?subject='+encodeURIComponent('Cash Flow Analysis — '+n)+'&body='+encodeURIComponent(b)}
+// ---- export (mirrors template layout)
+function exportX(){const m=M,nm=el('name').value||'Property',v=id=>el(id).value,yrs=m.rows;
+ const A=[['Cash Flow Analysis'],[],['Prepared For:',v('prep')],['Last Revision:',v('rev')],[],['Properties:',nm],['Address:',v('addr')],['Price Per Unit',m.ppu],[],
+  ['Property Information:',null,null,'Loan Information:',null,null,'Refinance Loan:',null,null,'Depreciation:',null,null,'Tax Assumptions / Expenses:'],
+  ['Purchase Price:',m.price,null,'Loan Amount:',m.loan0,null,'Loan Amount:',m.refi?m.refi.nl:null,null,'Improvement Ratio:',(num('impr')??0)/100,null,'Federal Tax Rate:',(num('fed')||0)/100],
+  ['Down Payment:',m.down,null,'Interest:',(num('rate')||0)/100,null,'Interest:',m.refi?m.refi.rate:null,null,'Depreciable Basis:',m.dep,null,'State Tax Rate:',(num('st')||0)/100],
+  ['Loan Amount:',m.loan0,null,'Amort:',num('amy'),null,'Amort:',num('ramy'),null,'Useful Life:',num('life'),null,'Vacancy:',(num('vac')||0)/100],
+  ['Cap Rate:',m.cap,null,'Term:',num('term'),null,'Term:',num('rterm'),null,'Annual Depreciation:',m.adep,null,'Reserve:',(num('res')||0)/100],
+  ['Closing Costs:',num('cc'),null,'LTV:',m.price?m.loan0/m.price:null,null,'LTV:',m.refi&&m.price?m.refi.nl/m.price:null,null,null,null,null,'Operating Expenses:',(num('opx')||0)/100],
+  [],[null,...yrs.map(r=>r.yr),'TOTAL/'],['Tenant',...yrs.map(r=>'year '+r.y),'AVG']];
+ const hr=A.length;GRID.forEach(([l,k,f,t])=>{const vals=yrs.map(r=>r[k]??null),ok=vals.filter(x=>x!=null);A.push([l+':',...vals,t==='sum'?ok.reduce((a,b)=>a+b,0):t==='avg'&&ok.length?ok.reduce((a,b)=>a+b,0)/ok.length:null])});
+ const ws=XLSX.utils.aoa_to_sheet(A);const pc=new Set(['Cash on Cash Return','Total Return on Invest.','LTV']);
+ GRID.forEach(([l],i)=>{for(let c=1;c<=yrs.length+1;c++){const cl=ws[XLSX.utils.encode_cell({r:hr+i,c})];if(cl&&cl.t==='n')cl.z=pc.has(l)?'0.00%':'$#,##0;[Red]-$#,##0'}});
+ [[10,1],[11,1],[12,1],[13,1],[10,4],[10,7],[13,10],[14,1],[14,4],[7,1]].forEach(([r,c])=>{const cl=ws[XLSX.utils.encode_cell({r,c})];if(cl&&cl.t==='n')cl.z='$#,##0'});
+ [[13,1],[11,4],[14,4],[11,7],[14,7],[10,10],[10,13],[11,13],[12,13],[13,13],[14,13]].forEach(([r,c])=>{const cl=ws[XLSX.utils.encode_cell({r,c})];if(cl&&cl.t==='n')cl.z='0.00%'});
+ ws['!cols']=[{wch:28},...yrs.map(()=>({wch:13})),{wch:14}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Cash Flow Analysis');
+ if(demo&&demo.rings)XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Metric','1 Mile','3 Miles','5 Miles'],...DM.map(([l,k])=>[l,...demo.rings.map(r=>r[k]??null)]),['Source',demo.src]]),'Demographics');
+ if(ret&&ret.items)XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Name','Brand','Category','Miles'],...ret.items.map(x=>[x.n,x.b||'',x.c,+x.d.toFixed(2)])]),'Nearby Retail');
  XLSX.writeFile(wb,nm.replace(/[^\w\- ]/g,'')+' CFA.xlsx')}
 function printOM(){document.body.classList.add('printing');Object.values(maps).forEach(m=>m&&m.invalidateSize());setTimeout(()=>{window.print();document.body.classList.remove('printing')},900)}
 // ---- location
@@ -288,14 +310,13 @@ function renderLoc(){const g=demo&&demo.geo;
 // ---- boot
 async function go(){try{DEF=await (await fetch('data.json',{cache:'no-store'})).json()}catch(e){DEF={props:[]}}
  el('app').style.display='';
- const s=store();let changed=false;(DEF.props||[]).forEach(p=>{if(!s[p.name]){s[p.name]=p;changed=true}});if(changed)localStorage.setItem('pcfa_props',JSON.stringify(s));
- let last=null;try{last=JSON.parse(localStorage.getItem('pcfa_last')||'null')}catch(e){}
- const first=last||DEF.props[0];cur=first.name;fillSaved(first.name);
+ const s=store(),ver=DEF.ver||0;let changed=false;(DEF.props||[]).forEach(p=>{if(!s[p.name]||(s[p.name]._v||0)<ver){s[p.name]={...p,_v:ver,demo:s[p.name]?.demo,ret:s[p.name]?.ret};changed=true}});if(changed)localStorage.setItem('pcfa_props',JSON.stringify(s));
+ let last=null;try{last=JSON.parse(localStorage.getItem('pcfa_last')||'null')}catch(e){}if(last&&last.inc==null)last=null;
+ const first=last||s[DEF.props[0].name];cur=first.name;fillSaved(first.name);
  document.querySelectorAll('#tabs .pill').forEach(b=>b.onclick=()=>tab(b.dataset.t));
- F.forEach(k=>{const e=el(k);if(e)e.addEventListener('input',calc)});el('addr').addEventListener('change',()=>{el('addr2').value=el('addr').value});
- setState(first);tab('P');if(first.addr&&!(first.demo&&first.demo.rings))runLoc(false)}
+ F.forEach(k=>{const e=el(k);if(e){e.addEventListener('input',calc);e.addEventListener('change',calc)}});el('addr').addEventListener('change',()=>{el('addr2').value=el('addr').value});
+ setState(first);tab('A');if(first.addr&&!(first.demo&&first.demo.rings))runLoc(false)}
 function tab(t){document.querySelectorAll('#tabs .pill').forEach(b=>b.classList.toggle('on',b.dataset.t===t));document.querySelectorAll('section[data-s]').forEach(s=>s.style.display=s.dataset.s===t?'':'none');setTimeout(()=>{Object.values(maps).forEach(m=>m.invalidateSize());if(demo&&demo.geo)renderLoc()},60)}
-
 go();
 
 </script><!--SORTABLE-START--><script>
