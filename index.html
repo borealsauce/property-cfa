@@ -92,6 +92,9 @@ table.grid tr.b td{font-weight:700}table.grid tr.hl td{background:#e8b9231c!impo
 .inc1 label.prim{color:var(--gold);font-size:11.5px}.inc1 label.prim input{border-color:var(--gold);font-size:15px;font-weight:700}
 .combo{display:flex;gap:6px}.combo input{flex:1;min-width:0}.combo select{width:auto}
 #byyear{margin-top:4px}
+.ced{width:90px;padding:4px 6px;font-size:12px;text-align:right}.pr{display:none}
+.cn{color:#0b3d91;font:700 11px Inter;white-space:nowrap;text-shadow:0 0 3px #fff,0 0 3px #fff;transform:translate(8px,-6px)}
+@media print{.ced{display:none}.pr{display:inline}}
 </style>
 </head><body>
 <div class="top"><div class="wrap"><h1>Property CFA / OM</h1><div class="muted">Single-property cash flow analysis &amp; offering memorandum · updates live as you type</div></div></div>
@@ -140,7 +143,7 @@ table.grid tr.b td{font-weight:700}table.grid tr.hl td{background:#e8b9231c!impo
 </div></section>
 <section data-s="L"><div class="frm noprint"><div class="fg"><label>Address<input id="addr2"></label></div><button class="pill" onclick="runLoc(true)">Look up address</button> <span class="muted" id="lstat"></span></div>
  <div class="grid2"><div><h2>Location · 1 / 3 / 5 Mile Rings</h2><div id="map" class="mapbox"></div></div><div><h2>Demographics</h2><div class="scroll" id="tDemo"></div><div class="muted" id="demoSrc"></div></div></div>
- <h2>Nearby Retail &amp; Amenities (3 mi)</h2><div id="map2" class="mapbox"></div><div class="muted" id="rstat"></div><div class="scroll" id="tRet"></div></section>
+ <h2>Nearby Mobile Home Park Comps</h2><div class="info" id="cSum"></div><div id="map2" class="mapbox"></div><div class="muted" id="cstat"></div><div class="scroll" id="tComp"></div></section>
 <section data-s="O" class="fin"><h2>Net Cash Flow &amp; Cash-on-Cash</h2><div class="chartbox" id="cNet2"></div><div class="grid2"><div><h2>NOI · Debt Service · Net Cash Flow</h2><div class="chartbox" id="c1"></div></div><div><h2>Value · Loan Balance · Equity</h2><div class="chartbox" id="c2"></div></div></div>
  <h2>Debt &amp; Refi Summary</h2><div class="scroll" id="tDebt"></div>
  <h2>Projection by Year</h2><div class="scroll" id="tY"></div>
@@ -159,7 +162,7 @@ const sg=v=>v>0?'pos':v<0?'neg':'';
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const el=id=>document.getElementById(id);
 const F=['opx0','eg','rate2','name','addr','prep','rev','units','pmode','price','capin','dpmode','down','ltv','cc','rate','amy','term','dtype','ioy','dso','ry','rltv','rrate','ramy','rterm','rtype','rcap','rbasis','rcost','impr','life','fed','st','vac','res','opx','reimb','inc','gmode','g','incy','opxy','start','hold'];
-let DEF={},cur=null,demo=null,ret=null;
+let DEF={},cur=null,demo=null,ret=null,comps=null;
 const pn=v=>{v=String(v??'').replace(/[$,\s]/g,'');return v===''||v==='-'?null:+v};
 const num=id=>pn(el(id)?.value);
 const MONEY=['price','down','cc','dso','inc','opx0'],MLIST=['incy','opxy'];
@@ -167,10 +170,10 @@ const fmtM=v=>{const n=pn(v);return n==null||!isFinite(n)?v:(n<0?'-':'')+Math.ab
 function fmtField(k){const e=el(k);if(!e||document.activeElement===e)return;if(MONEY.includes(k)||(k==='g'&&el('gmode').value==='usd'))e.value=e.value===''?'':fmtM(e.value);else if(MLIST.includes(k))e.value=lstv(e.value).map(fmtM).join('; ')}
 const lstv=s=>String(s||'').split(/;|,\s+|\s+/).map(x=>x.trim()).filter(x=>x!=='').map(x=>x.replace(/[$,]/g,''));
 const lst=id=>lstv(el(id).value).map(Number);
-function state(){const s={};F.forEach(k=>{if(el(k))s[k]=el(k).value});s.demo=demo;s.ret=ret;s._v=DEF.ver||0;return s}
+function state(){const s={};F.forEach(k=>{if(el(k))s[k]=el(k).value});s.demo=demo;s.ret=ret;s.comps=comps;s._v=DEF.ver||0;return s}
 const MIG={noi:'inc',noiy:'incy'};
 function setState(s){s={...s};Object.entries(MIG).forEach(([o,n])=>{if(s[o]!=null&&s[n]==null)s[n]=s[o]});if(s.ltv==null&&s.dpmode==null)s.dpmode='ltv';
- F.forEach(k=>{if(el(k))el(k).value=s[k]??(el(k).tagName==='SELECT'?el(k).options[0].value:'')});el('addr2').value=s.addr||'';demo=s.demo||null;ret=s.ret||null;[...MONEY,...MLIST,'g'].forEach(fmtField);el('byyear').open=!!(el('incy').value||el('opxy').value);calc();renderLoc()}
+ F.forEach(k=>{if(el(k))el(k).value=s[k]??(el(k).tagName==='SELECT'?el(k).options[0].value:'')});el('addr2').value=s.addr||'';demo=s.demo||null;ret=s.ret&&s.ret.kind==='mhp'?s.ret:null;comps=s.comps||null;[...MONEY,...MLIST,'g'].forEach(fmtField);el('byyear').open=!!(el('incy').value||el('opxy').value);calc();renderLoc()}
 const PMT=(r,n,pv)=>n?(r?pv*r/(1-Math.pow(1+r,-n)):pv/n):pv*r;
 function model(){
  const hold=Math.max(1,Math.min(30,num('hold')||15)),start=num('start')||new Date().getFullYear();
@@ -280,7 +283,7 @@ function exportX(){const m=M,nm=el('name').value||'Property',v=id=>el(id).value,
  [[13,1],[11,4],[14,4],[11,7],[14,7],[10,10],[10,13],[11,13],[12,13],[13,13],[14,13]].forEach(([r,c])=>{const cl=ws[XLSX.utils.encode_cell({r,c})];if(cl&&cl.t==='n')cl.z='0.00%'});
  ws['!cols']=[{wch:28},...yrs.map(()=>({wch:13})),{wch:14}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Cash Flow Analysis');
  if(demo&&demo.rings)XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Metric','1 Mile','3 Miles','5 Miles'],...DM.map(([l,k])=>[l,...demo.rings.map(r=>r[k]??null)]),['Source',demo.src]]),'Demographics');
- if(ret&&ret.items)XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Name','Brand','Category','Miles'],...ret.items.map(x=>[x.n,x.b||'',x.c,+x.d.toFixed(2)])]),'Nearby Retail');
+ {const cl=compList();if(cl.length)XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Park','Address','Lot Rent/mo','Pads/Homes','Miles','Source'],...cl.map(x=>[x.n,x.a||'',x.rent??null,x.pads??null,x.d!=null?+x.d.toFixed(2):null,(x.urls||[x.url]).filter(Boolean).join(' | ')])]),'MHP Comps')}
  XLSX.writeFile(wb,nm.replace(/[^\w\- ]/g,'')+' CFA.xlsx')}
 function printOM(){document.body.classList.add('printing');Object.values(maps).forEach(m=>m&&m.invalidateSize());setTimeout(()=>{window.print();document.body.classList.remove('printing')},900)}
 // ---- location
@@ -305,37 +308,48 @@ async function getDemo(lat,lon){const basic='B01001_001E,B01002_001E,B19049_001E
   if(!ts.length)Object.keys(o).forEach(k=>{if(!['r','tracts'].includes(k))o[k]=null});return o});
  return {rings,src:'U.S. Census Bureau ACS 2020–2024 5-year estimates (tract level, via Esri Living Atlas); growth vs ACS 2010–2014 5-year. Tracts counted when their centroid falls inside the ring.',at:new Date().toISOString()}}
 const BR=['Walmart','Target','Home Depot','The Home Depot',"Lowe's",'Costco','Sam\'s Club','Kroger','Publix','Safeway','Albertsons','Raley\'s','Smith\'s','WinCo','Save Mart','Grocery Outlet','Trader Joe\'s','Whole Foods','Sprouts','Aldi','Dollar General','Dollar Tree','Family Dollar','McDonald\'s','Starbucks','Chick-fil-A','Taco Bell','Burger King','Wendy\'s','Subway','In-N-Out','Jack in the Box','Carl\'s Jr.','Panda Express','Chipotle','Domino\'s','Pizza Hut','Dutch Bros','Walgreens','CVS','Rite Aid','AutoZone','O\'Reilly','Big 5','Ross','TJ Maxx','Marshalls','Kohl\'s','Best Buy','PetSmart','Petco','Planet Fitness','Chase','Wells Fargo','Bank of America','U.S. Bank','7-Eleven','Shell','Chevron','Arco','Circle K','Maverik','Speedway','Wawa','Sheetz','Food Lion','H-E-B','Meijer','Hy-Vee','Harris Teeter','Wegmans','Tractor Supply','Big Lots','Five Below','Popeyes','Sonic','Arby\'s','KFC','Dairy Queen','Little Caesars','Del Taco','El Pollo Loco','Jersey Mike\'s','Panera Bread','Dunkin\''];
-const OV=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://maps.mail.ru/osm/tools/overpass/api/interpreter'];
-async function getRet(lat,lon){const a=`(around:4828,${lat},${lon})`;const qq=`[out:json][timeout:40];(nwr["shop"~"^(supermarket|department_store|wholesale|hardware|doityourself|variety_store|convenience|mall)$"]${a};nwr["amenity"~"^(fast_food|bank|fuel|hospital|school|pharmacy|cafe|restaurant)$"]["brand"]${a};nwr["amenity"~"^(hospital|school|college|university)$"]${a};way["highway"~"^(motorway|trunk)$"]${a};);out center tags;`;
- let j=null,err='';for(const u of OV){try{const r=await fetch(u,{method:'POST',body:'data='+encodeURIComponent(qq),headers:{'Content-Type':'application/x-www-form-urlencoded'}});if(r.ok){j=await r.json();break}err+=r.status+' '}catch(e){err+='x '}}
- if(!j)return {err:'Overpass API unavailable ('+err.trim()+')'};const hw={},items=[];
- j.elements.forEach(e=>{const t=e.tags||{},la=e.lat??e.center?.lat,lo=e.lon??e.center?.lon;if(la==null)return;const d=hav(lat,lon,la,lo);
-  if(t.highway){const k=t.ref||t.name;if(k&&(!hw[k]||hw[k].d>d))hw[k]={n:k,c:'Highway',d,la,lo};return}
-  const n=t.name||t.brand;if(!n)return;const c=t.shop?t.shop.replace(/_/g,' '):(t.amenity||'').replace(/_/g,' ');const bn=t.brand||BR.find(b=>n.toLowerCase().includes(b.toLowerCase()));items.push({n,b:bn&&BR.some(b=>bn.toLowerCase().includes(b.toLowerCase())||b.toLowerCase()===bn.toLowerCase())?bn:'',c,d,la,lo})});
- const seen=new Set(),out=[...items,...Object.values(hw)].sort((x,y)=>x.d-y.d).filter(x=>{const k=x.n+'|'+x.c+'|'+x.d.toFixed(2);if(seen.has(k))return false;seen.add(k);return true});
- return {items:out,src:'OpenStreetMap contributors via Overpass API',at:new Date().toISOString()}}
+const OV=['https://overpass-api.de/api/interpreter','https://maps.mail.ru/osm/tools/overpass/api/interpreter','https://overpass.kumi.systems/api/interpreter'];
+async function getComps(lat,lon){const A=`(around:16093,${lat},${lon})`;const qq=`[out:json][timeout:50];(nwr["landuse"="residential"]["residential"="trailer_park"]${A};nwr["place"="mobile_home_park"]${A};nwr["residential"="trailer_park"]${A};nwr["tourism"="caravan_site"]["name"~"Mobile Home|MHP|Manufactured|Estates",i]${A};);out center tags;`;
+ let j=null,err='';for(const u of OV){try{const ac=new AbortController(),to=setTimeout(()=>ac.abort(),40000);const r=await fetch(u,{method:'POST',signal:ac.signal,body:'data='+encodeURIComponent(qq),headers:{'Content-Type':'application/x-www-form-urlencoded'}});clearTimeout(to);if(r.ok){j=await r.json();break}err+=r.status+' '}catch(e){err+='x '}}
+ if(!j)return {kind:'mhp',err:'Overpass API unavailable ('+err.trim()+')'};const subj=(el('name').value||'').toLowerCase(),seen=new Set(),items=[];
+ j.elements.forEach(e=>{const t=e.tags||{},la=e.lat??e.center?.lat,lo=e.lon??e.center?.lon;if(la==null)return;const d=hav(lat,lon,la,lo);const n=t.name||'Unnamed park (OSM)';
+  if(d<0.12||(t.name&&subj&&t.name.toLowerCase()===subj))return;const k=n+'|'+d.toFixed(1);if(seen.has(k))return;seen.add(k);
+  const a=[t['addr:housenumber'],t['addr:street']].filter(Boolean).join(' ')+(t['addr:city']?', '+t['addr:city']:'');items.push({n,a:a||'',rent:null,pads:null,d,la,lo,url:`https://www.openstreetmap.org/${e.type}/${e.id}`,src:'OpenStreetMap'})});
+ items.sort((x,y)=>(x.n.startsWith('Unnamed')-y.n.startsWith('Unnamed'))||x.d-y.d);return {kind:'mhp',items:items.slice(0,10).sort((x,y)=>x.d-y.d),src:'OpenStreetMap contributors via Overpass API',at:new Date().toISOString()}}
+async function retryComps(){const g=demo&&demo.geo;if(!g)return;el('tComp').innerHTML='<div class="muted">Finding nearby parks…</div>';try{ret=await getComps(g.lat,g.lon)}catch(e){ret={kind:'mhp',err:'Park lookup unavailable'}}try{localStorage.setItem('pcfa_loc2_'+(el('addr').value||'').toLowerCase(),JSON.stringify({demo,ret}))}catch(e){}renderLoc()}
+function compList(){const g=demo&&demo.geo,L=comps&&comps.length?comps:(ret&&ret.items)||[];return L.map(x=>({...x,d:g&&x.la!=null?hav(g.lat,g.lon,x.la,x.lo):x.d}))}
+function editComp(i,k,v){if(!(comps&&comps.length))comps=((ret&&ret.items)||[]).map(x=>({...x}));const n=pn(v);comps[i][k]=n;comps.edited=true;
+ const s=store();if(cur&&s[cur]){s[cur].comps=comps;s[cur].compsEdited=true;localStorage.setItem('pcfa_props',JSON.stringify(s))}renderComps()}
+function renderComps(){const cl=compList(),idx=cl.map((x,i)=>i);const rents=cl.map(x=>x.rent).filter(v=>v!=null&&isFinite(v));
+ el('cSum').innerHTML=rents.length?`<span>Average lot rent <b>${$0(rents.reduce((a,b)=>a+b,0)/rents.length)}</b>/mo</span><span>Range <b>${$0(Math.min(...rents))} – ${$0(Math.max(...rents))}</b></span><span>Rents found for <b>${rents.length}</b> of ${cl.length} parks</span>`:(cl.length?'<span>No rents yet — type them into the table.</span>':'');
+ if(!cl.length){el('tComp').innerHTML=`<div class="muted">${ret&&ret.err?esc(ret.err)+' — the free OpenStreetMap servers are busy. <button class="pill" onclick="retryComps()">Retry park lookup</button>':'Look up an address to find nearby parks.'}</div>`;el('cstat').textContent='';return}
+ const inp=(i,k,v)=>`<input class="ced" inputmode="decimal" value="${v==null?'':Number(v).toLocaleString('en-US')}" placeholder="—" onchange="editComp(${i},'${k}',this.value)">`;
+ table('tComp',['Park','Address','Lot Rent/mo','Pads/Homes','Miles','Source'],cl.map((x,i)=>[tt(x.n),tt(x.a||'—'),`<td data-v="${x.rent??''}"><span class="pr">${x.rent!=null?$0(x.rent):'—'}</span>${inp(i,'rent',x.rent)}</td>`,`<td data-v="${x.pads??''}"><span class="pr">${x.pads??'—'}</span>${inp(i,'pads',x.pads)}</td>`,td(x.d,v=>v.toFixed(2)),`<td class="t" data-v="${esc(x.src||'')}">${(x.urls||[x.url]).filter(Boolean).map((u,k)=>`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(k?'link '+(k+1):(x.src||'source'))}</a>`).join(' · ')||'—'}</td>`]));
+ el('cstat').textContent=comps&&comps.length?(comps.edited||comps.researched===false?'Saved comps for this property (edited values stored in this browser).':'Researched comps saved with this property; edit any rent or pad count inline.'):'Automatic list from '+(ret.src||'OpenStreetMap')+' — rents and pad counts aren\'t in OSM, so type them in.'}
+
 async function runLoc(force){const a=el('addr2').value.trim()||el('addr').value.trim();if(!a){el('lstat').textContent='Enter an address.';return}el('addr').value=a;el('addr2').value=a;
- const key='pcfa_loc_'+a.toLowerCase();let c=null;try{c=JSON.parse(localStorage.getItem(key)||'null')}catch(e){}
+ const key='pcfa_loc2_'+a.toLowerCase();let c=null;try{c=JSON.parse(localStorage.getItem(key)||'null')}catch(e){}
  if(c&&!force){demo=c.demo;ret=c.ret;renderLoc();return}
  el('lstat').textContent='Geocoding…';const g=await geocode(a);if(!g){el('lstat').textContent='Address not found.';return}
- demo={geo:g};ret=null;renderLoc();el('lstat').textContent='Loading demographics and nearby retail…';
- const [d,r]=await Promise.allSettled([getDemo(g.lat,g.lon),getRet(g.lat,g.lon)]);
- demo={geo:g,...(d.status==='fulfilled'?d.value:{err:'Census data unavailable: '+(d.reason?.message||'request failed')})};ret=r.status==='fulfilled'?r.value:{err:'Retail data unavailable'};
- try{localStorage.setItem(key,JSON.stringify({demo,ret}))}catch(e){}el('lstat').textContent='Located: '+g.label+' ('+g.src+')';renderLoc();calc()}
+ demo={geo:g};ret=null;renderLoc();el('lstat').textContent='Loading demographics and nearby parks…';
+ const save=()=>{try{localStorage.setItem(key,JSON.stringify({demo,ret}))}catch(e){}};
+ const pd=getDemo(g.lat,g.lon).then(v=>{demo={geo:g,...v}}).catch(e=>{demo={geo:g,err:'Census data unavailable: '+(e?.message||'request failed')}}).then(()=>{save();renderLoc();el('lstat').textContent='Located: '+g.label+' ('+g.src+')'+(ret?'':' · finding nearby parks…')});
+ const pc=getComps(g.lat,g.lon).then(v=>{ret=v}).catch(()=>{ret={kind:'mhp',err:'Park lookup unavailable'}}).then(()=>{save();renderLoc()});
+ await Promise.allSettled([pd,pc]);el('lstat').textContent='Located: '+g.label+' ('+g.src+')';calc()}
 function renderLoc(){const g=demo&&demo.geo;if(!g){Object.values(layers).forEach(l=>l&&l.clearLayers());const ls=el('lstat');if(ls)ls.textContent=''}
  if(demo&&demo.rings)table('tDemo',['Metric','1 Mile','3 Miles','5 Miles'],DM.map(([l,k,f])=>[tt(l),...demo.rings.map(r=>r[k]==null?'<td data-v="">unavailable</td>':td(r[k],f))]));else el('tDemo').innerHTML=`<div class="muted">${demo&&demo.err?esc(demo.err):'Look up an address to load demographics.'}</div>`;
  el('demoSrc').innerHTML=demo&&demo.rings?'Source: '+esc(demo.src)+'<br>* Ring value = household/population-weighted average of tract medians. ** Estimated from household income brackets. Per-capita income and daytime population aren\'t in the free tract layers, so they show unavailable.':'';
- if(ret&&ret.items){const top=ret.items.slice(0,200);table('tRet',['Name','Brand','Category','Miles'],top.map(x=>[tt(x.n),tt(x.b||''),tt(x.c),td(x.d,v=>v.toFixed(2))]));el('rstat').textContent=`${ret.items.length} places within 3 mi · ${ret.items.filter(x=>x.b).length} national brands highlighted · Source: ${ret.src}`}else{el('tRet').innerHTML='';el('rstat').textContent=ret&&ret.err?ret.err:''}
+ renderComps();
  if(!g||!window.L)return;
  ['map','map2','map3'].forEach(id=>{const m=mk(id);if(!m)return;const lg=layers[id];lg.clearLayers();
   L.circleMarker([g.lat,g.lon],{radius:8,color:'#050505',weight:2,fillColor:'#e8b923',fillOpacity:1}).bindTooltip(el('name').value||'Subject',{permanent:true,direction:'top',className:'lbl subj'}).addTo(lg);
-  const rr=id==='map2'?[3]:[1,3,5];rr.forEach(r=>{L.circle([g.lat,g.lon],{radius:r*1609.34,color:'#e8b923',weight:2,fill:false,dashArray:'6 4'}).addTo(lg);L.marker([g.lat+r/69.0,g.lon],{icon:L.divIcon({className:'rl',html:r+' mi'})}).addTo(lg)});
-  if(id==='map2'&&ret&&ret.items){ret.items.forEach(x=>{const br=!!x.b;L.circleMarker([x.la,x.lo],{radius:br?6:3,color:br?'#e8b923':'#888',weight:1,fillColor:br?'#ff2d3a':'#bbb',fillOpacity:.9}).bindTooltip(esc(x.n),{permanent:br&&x.d<2.2,direction:'right',className:'lbl'}).addTo(lg)})}
-  m.setView([g.lat,g.lon],id==='map2'?12:id==='map3'?12:11);setTimeout(()=>m.invalidateSize(),50)})}
+  const rr=[1,3,5];rr.forEach(r=>{L.circle([g.lat,g.lon],{radius:r*1609.34,color:'#e8b923',weight:2,fill:false,dashArray:'6 4'}).addTo(lg);L.marker([g.lat+r/69.0,g.lon],{icon:L.divIcon({className:'rl',html:r+' mi'})}).addTo(lg)});
+  if(id==='map2'){compList().forEach(x=>{if(x.la==null)return;const tip=`<b>${esc(x.n)}</b><br>${esc(x.a||'')}<br>Lot rent: ${x.rent!=null?$0(x.rent)+'/mo':'—'}<br>Pads/Homes: ${x.pads??'—'}<br>${x.d!=null?x.d.toFixed(2)+' mi':''}`;L.circleMarker([x.la,x.lo],{radius:7,color:'#050505',weight:1.5,fillColor:'#60a5fa',fillOpacity:.95}).bindTooltip(tip,{direction:'top',className:'lbl'}).bindPopup(tip).addTo(lg);L.marker([x.la,x.lo],{icon:L.divIcon({className:'cn',html:esc(x.n),iconSize:null})}).addTo(lg)})}
+  if(id==='map2'){const pts=compList().filter(x=>x.la!=null).map(x=>[x.la,x.lo]);pts.push([g.lat,g.lon]);if(pts.length>1)m.fitBounds(pts,{padding:[30,30]});else m.setView([g.lat,g.lon],12)}else m.setView([g.lat,g.lon],id==='map3'?12:11);setTimeout(()=>m.invalidateSize(),50)})}
 // ---- boot
 async function go(){try{DEF=await (await fetch('data.json',{cache:'no-store'})).json()}catch(e){DEF={props:[]}}
  el('app').style.display='';
- const s=store(),ver=DEF.ver||0;let changed=false;(DEF.props||[]).forEach(p=>{if(!s[p.name]||(s[p.name]._v||0)<ver){s[p.name]={...p,_v:ver,demo:s[p.name]?.demo,ret:s[p.name]?.ret};changed=true}});if(changed)localStorage.setItem('pcfa_props',JSON.stringify(s));
+ const s=store(),ver=DEF.ver||0;let changed=false;(DEF.props||[]).forEach(p=>{if(!s[p.name]||(s[p.name]._v||0)<ver){s[p.name]={...p,_v:ver,demo:s[p.name]?.demo,ret:s[p.name]?.ret,...(s[p.name]?.compsEdited?{comps:s[p.name].comps,compsEdited:true}:{})};changed=true}});if(changed)localStorage.setItem('pcfa_props',JSON.stringify(s));
  let last=null;try{last=JSON.parse(localStorage.getItem('pcfa_last')||'null')}catch(e){}if(last&&(last.inc==null||(last._v||0)<ver))last=null;
  const first=last||s[DEF.props[0].name];cur=first.name;fillSaved(first.name);
  document.querySelectorAll('#tabs .pill').forEach(b=>b.onclick=()=>tab(b.dataset.t));el('saved').addEventListener('change',onPick);el('name').addEventListener('input',onName);
