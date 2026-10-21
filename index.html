@@ -89,6 +89,9 @@ table.grid th{font-size:10px;padding:6px 7px}table.grid td{padding:5px 7px;font-
 table.grid tr.b td{font-weight:700}table.grid tr.hl td{background:#e8b9231c!important;font-weight:800;border-top:1px solid var(--gb)}table.grid tr.hl td:first-child{color:var(--gold)}
 @media print{.sheet,.box{background:#fff!important;border-color:#c9a227!important}.box h3{background:#e8b923!important}.box input,.box select,.hrow input,.hrow select{border:0;background:#fff!important;color:#111;padding:0}.ro b{color:#5a4500!important}
  section[data-s="A"]{page-break-after:always}table.grid td,table.grid th{font-size:8px;padding:2px 3px}.boxes{grid-template-columns:1fr 2fr 1fr 1fr}}
+.inc1 label.prim{color:var(--gold);font-size:11.5px}.inc1 label.prim input{border-color:var(--gold);font-size:15px;font-weight:700}
+.combo{display:flex;gap:6px}.combo input{flex:1;min-width:0}.combo select{width:auto}
+#byyear{margin-top:4px}
 </style>
 </head><body>
 <div class="top"><div class="wrap"><h1>Property CFA / OM</h1><div class="muted">Single-property cash flow analysis &amp; offering memorandum · updates live as you type</div></div></div>
@@ -124,8 +127,13 @@ table.grid tr.b td{font-weight:700}table.grid tr.hl td{background:#e8b9231c!impo
 <div class="box"><h3>Depreciation</h3><label>Improvement Ratio (%)<input id="impr" type="number" step="any" placeholder=""></label><div class="ro"><span>Depreciable Basis</span><b id="oDep"></b></div><label>Useful Life (yrs)<input id="life" type="number" step="any" placeholder=""></label><div class="ro"><span>Annual Depreciation</span><b id="oADep"></b></div></div>
 <div class="box"><h3>Tax Assumptions</h3><label>Federal Tax Rate (%)<input id="fed" type="number" step="any" placeholder=""></label><label>State Tax Rate (%)<input id="st" type="number" step="any" placeholder=""></label><div class="sub">Expenses</div><label>Vacancy (% of gross)<input id="vac" type="number" step="any" placeholder=""></label><label>Reserve (% of gross)<input id="res" type="number" step="any" placeholder=""></label><label>Operating Expenses (% of gross)<input id="opx" type="number" step="any" placeholder=""></label><label>Oper. Exp. Reimbursed (% of opex)<input id="reimb" type="number" step="any" placeholder=""></label></div>
 </div>
-<div class="box wide"><h3>Income</h3><div class="hrow"><label>Tenant / Gross Income Year 1 ($/yr)<input id="inc" type="text" inputmode="decimal" step="any" placeholder=""></label><label>Annual increase type<select id="gmode"><option value="pct">%</option><option value="usd">$ per year</option></select></label><label>Annual increase<input id="g" type="text" inputmode="decimal" step="any" placeholder=""></label><label>Start year<input id="start" type="number" step="any" placeholder=""></label><label>Years shown<input id="hold" type="number" step="any" placeholder=""></label></div>
-<div class="hrow"><label>Gross income by year (optional, separate with ;)<input id="incy" type="text" step="any" placeholder=""></label><label>Operating expense by year ($, optional, separate with ;)<input id="opxy" type="text" step="any" placeholder=""></label></div></div>
+<div class="box wide"><h3>Income</h3><div class="hrow inc1">
+<label class="prim">Starting NOI (Year 1) ($/yr)<input id="inc" type="text" inputmode="decimal" placeholder="e.g. 100,000"></label>
+<label class="prim">Annual Gross Income Increase<span class="combo"><input id="g" type="text" inputmode="decimal" placeholder="3"><select id="gmode"><option value="pct">%</option><option value="usd">$ / yr</option></select></span></label>
+<label>Starting Operating Expense ($/yr, optional)<input id="opx0" type="text" inputmode="decimal" placeholder="optional"></label>
+<label>Annual Expense Increase (%, optional)<input id="eg" type="number" step="any" placeholder="only if expense entered"></label>
+<label>Start year<input id="start" type="number" step="any"></label><label>Years shown<input id="hold" type="number" step="any"></label></div>
+<details id="byyear"><summary>Enter by year (optional — overrides the projection)</summary><div class="hrow" style="margin-top:8px"><label>Gross income by year (separate with ;)<input id="incy" type="text"></label><label>Operating expense by year (separate with ;)<input id="opxy" type="text"></label></div></details></div>
 <div class="muted neg" id="wn"></div>
 <div class="scroll" id="tGrid"></div>
 <h2>Net Cash Flow &amp; Cash on Cash</h2><div class="chartbox" id="cNet"></div>
@@ -150,11 +158,11 @@ const I=v=>v==null||!isFinite(v)?'—':Math.round(v).toLocaleString('en-US');
 const sg=v=>v>0?'pos':v<0?'neg':'';
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const el=id=>document.getElementById(id);
-const F=['rate2','name','addr','prep','rev','units','pmode','price','capin','dpmode','down','ltv','cc','rate','amy','term','dtype','ioy','dso','ry','rltv','rrate','ramy','rterm','rtype','rcap','rbasis','rcost','impr','life','fed','st','vac','res','opx','reimb','inc','gmode','g','incy','opxy','start','hold'];
+const F=['opx0','eg','rate2','name','addr','prep','rev','units','pmode','price','capin','dpmode','down','ltv','cc','rate','amy','term','dtype','ioy','dso','ry','rltv','rrate','ramy','rterm','rtype','rcap','rbasis','rcost','impr','life','fed','st','vac','res','opx','reimb','inc','gmode','g','incy','opxy','start','hold'];
 let DEF={},cur=null,demo=null,ret=null;
 const pn=v=>{v=String(v??'').replace(/[$,\s]/g,'');return v===''||v==='-'?null:+v};
 const num=id=>pn(el(id)?.value);
-const MONEY=['price','down','cc','dso','inc'],MLIST=['incy','opxy'];
+const MONEY=['price','down','cc','dso','inc','opx0'],MLIST=['incy','opxy'];
 const fmtM=v=>{const n=pn(v);return n==null||!isFinite(n)?v:(n<0?'-':'')+Math.abs(n).toLocaleString('en-US',{maximumFractionDigits:2})};
 function fmtField(k){const e=el(k);if(!e||document.activeElement===e)return;if(MONEY.includes(k)||(k==='g'&&el('gmode').value==='usd'))e.value=e.value===''?'':fmtM(e.value);else if(MLIST.includes(k))e.value=lstv(e.value).map(fmtM).join('; ')}
 const lstv=s=>String(s||'').split(/;|,\s+|\s+/).map(x=>x.trim()).filter(x=>x!=='').map(x=>x.replace(/[$,]/g,''));
@@ -162,14 +170,15 @@ const lst=id=>lstv(el(id).value).map(Number);
 function state(){const s={};F.forEach(k=>{if(el(k))s[k]=el(k).value});s.demo=demo;s.ret=ret;s._v=DEF.ver||0;return s}
 const MIG={noi:'inc',noiy:'incy'};
 function setState(s){s={...s};Object.entries(MIG).forEach(([o,n])=>{if(s[o]!=null&&s[n]==null)s[n]=s[o]});if(s.ltv==null&&s.dpmode==null)s.dpmode='ltv';
- F.forEach(k=>{if(el(k))el(k).value=s[k]??(el(k).tagName==='SELECT'?el(k).options[0].value:'')});el('addr2').value=s.addr||'';demo=s.demo||null;ret=s.ret||null;[...MONEY,...MLIST,'g'].forEach(fmtField);calc();renderLoc()}
+ F.forEach(k=>{if(el(k))el(k).value=s[k]??(el(k).tagName==='SELECT'?el(k).options[0].value:'')});el('addr2').value=s.addr||'';demo=s.demo||null;ret=s.ret||null;[...MONEY,...MLIST,'g'].forEach(fmtField);el('byyear').open=!!(el('incy').value||el('opxy').value);calc();renderLoc()}
 const PMT=(r,n,pv)=>n?(r?pv*r/(1-Math.pow(1+r,-n)):pv/n):pv*r;
 function model(){
  const hold=Math.max(1,Math.min(30,num('hold')||15)),start=num('start')||new Date().getFullYear();
  const iv=lst('incy'),ov=lst('opxy'),g=num('g')||0,gm=el('gmode').value,gross=[];
- for(let y=0;y<hold;y++){gross.push(isFinite(iv[y])?iv[y]:y===0?(num('inc')||0):gm==='pct'?gross[y-1]*(1+g/100):gross[y-1]+g)}
+ for(let y=0;y<hold;y++){gross.push(isFinite(iv[y])?iv[y]:y===0?(num('inc')||0)+(isFinite(ov[0])?ov[0]:(num('opx0')||0)):gm==='pct'?gross[y-1]*(1+g/100):gross[y-1]+g)}
  const vac=(num('vac')||0)/100,res=(num('res')||0)/100,opx=(num('opx')||0)/100,rb=(num('reimb')||0)/100;
- const L=gross.map((gi,y)=>{const v=-gi*vac,r=-gi*res,agi=gi+v+r,ox=-(isFinite(ov[y])?ov[y]:gi*opx),re=-ox*rb;return {gi,v,r,agi,ox,re,noi:agi+ox+re}});
+ const o0=num('opx0'),eg=(num('eg')||0)/100,oc=[];for(let y=0;y<hold;y++)oc.push(o0==null?null:o0*Math.pow(1+eg,y));
+ const L=gross.map((gi,y)=>{const v=-gi*vac,r=-gi*res,agi=gi+v+r,ox=-(isFinite(ov[y])?ov[y]:oc[y]!=null?oc[y]:gi*opx),re=-ox*rb;return {gi,v,r,agi,ox,re,noi:agi+ox+re}});
  const n1=L[0].noi;const price=el('pmode').value==='cap'?(num('capin')?n1/(num('capin')/100):0):(num('price')||0);
  const loan0=el('dpmode').value==='usd'?Math.max(0,price-(num('down')||0)):price*(num('ltv')||0)/100,down=price-loan0,inv=down+(num('cc')||0);
  const rate=(num('rate')||0)/100,amy=num('amy')||0,term=num('term')||0,dt=el('dtype').value,ioy=num('ioy')||0,dso=num('dso');
@@ -244,7 +253,7 @@ function loadSel(){const k=el('saved').value;if(k==='__new'){newProp();return}co
 function delSel(){const k=el('saved').value;if(!k||!confirm('Delete '+k+' from this browser?'))return;const s=store();delete s[k];localStorage.setItem('pcfa_props',JSON.stringify(s));fillSaved()}
 let newKey=null,nameT=null;
 function newProp(){cur='new';newKey=null;try{localStorage.removeItem('pcfa_last')}catch(e){}
- setState({pmode:'price',dpmode:'ltv',gmode:'pct',dtype:'am',rtype:'am',rbasis:'trail',ry:'0',hold:'10'});fillSaved('__new');tab('A');
+ setState({pmode:'price',dpmode:'ltv',gmode:'pct',g:'3',dtype:'am',rtype:'am',rbasis:'trail',ry:'0',hold:'10'});fillSaved('__new');tab('A');
  const n=el('name');n.focus();try{n.scrollIntoView({block:'center'})}catch(e){}}
 function onName(){if(cur!=='new'&&!newKey)return;clearTimeout(nameT);nameT=setTimeout(()=>{let nm=el('name').value.trim();const s=store();
  if(!nm){if(newKey){delete s[newKey];localStorage.setItem('pcfa_props',JSON.stringify(s));newKey=null;cur='new';fillSaved('__new')}return}
