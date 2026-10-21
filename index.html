@@ -97,6 +97,9 @@ table.grid tr.b td{font-weight:700}table.grid tr.hl td{background:#e8b9231c!impo
 @media print{.ced{display:none}.pr{display:inline}}
 .incbox .hrow{grid-template-columns:1fr}
 .badge{background:#050505;color:#e8b923;border-radius:999px;padding:1px 8px;margin-left:6px;font-size:10px}
+.strip{grid-template-columns:repeat(9,minmax(0,1fr));gap:10px}.strip .card{padding:12px 10px}.strip .card .v{font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.strip .card .l{font-size:9.5px;letter-spacing:.1em}
+@media(max-width:1200px){.strip{grid-template-columns:repeat(3,minmax(0,1fr))}.strip .card .v{font-size:22px}}
+@media(max-width:600px){.strip{grid-template-columns:repeat(2,minmax(0,1fr))}.strip .card:last-child{grid-column:1/-1}}
 </style>
 </head><body>
 <div class="top"><div class="wrap"><h1>Property CFA / OM</h1><div class="muted">Single-property cash flow analysis &amp; offering memorandum · updates live as you type</div></div></div>
@@ -112,7 +115,7 @@ table.grid tr.b td{font-weight:700}table.grid tr.hl td{background:#e8b9231c!impo
 <section data-s="A">
 <div class="sheet">
 <div class="shead"><h2 class="ttl">Cash Flow Analysis</h2>
-<div class="hrow"><label>Prepared For<input id="prep" type="text" step="any" placeholder=""></label><label>Last Revision<input id="rev" type="text" step="any" placeholder=""></label><label>Properties<input id="name" type="text" step="any" placeholder=""></label><label>Address<input id="addr" type="text" step="any" placeholder=""></label><label>Units (for price per unit)<input id="units" type="number" step="any" placeholder=""></label><div class="ro"><span>Price Per Unit</span><b id="oPpu"></b></div></div></div>
+<div class="hrow"><label>Prepared For<input id="prep" type="text" step="any" placeholder=""></label><label>Last Revision<input id="rev" type="text" step="any" placeholder=""></label><label>Properties<input id="name" type="text" step="any" placeholder=""></label><label>Address<input id="addr" type="text" step="any" placeholder=""></label><label>Units (for price per unit)<input id="units" type="number" step="any" placeholder=""></label></div></div>
 <div class="boxes">
 <div class="box"><h3>Property Information</h3>
 <label>Price entry<select id="pmode"><option value="price">Purchase price</option><option value="cap">Cap rate → price</option></select></label>
@@ -217,7 +220,7 @@ function calc(){const m=M=model(),r1=m.rows[0]||{};
  o('oLoan',$0(m.loan0));o('oDown',$0(m.down));o('oCap',P(m.cap));o('oLtv',P(m.price?m.loan0/m.price:null));o('oInv',$0(m.inv));o('oPmt',$0(pmt));o('oPmt2',pmtS);o('oBal',m.balloon!=null?$0(m.balloon):'—');o('oPpu',m.ppu?$0(m.ppu):'—');
  o('oRL',m.refi?$0(m.refi.nl):'—');el('lrio').style.display=el('rtype').value==='mx'?'':'none';o('oLoan2',$0(m.loan0));const on=el('ron').value==='on';el('rfields').style.display=on?'':'none';o('rbadge',on?'On':'Off');el('lam').style.display=d==='io'?'none':'';o('oRP',m.refi?$0(m.refi.pmt/12)+(m.refi.type==='mx'&&m.refi.am?' → '+$0(m.refi.am/12):''):'—');o('oRLtv',m.refi&&m.price?P(m.refi.nl/m.price):'—');
  o('oDep',$0(m.dep));o('oADep',m.adep!=null?$0(m.adep):'—');o('wn',m.warn.join(' '));
- el('strip').innerHTML=card('Price',$k(m.price))+card('NOI Yr 1',$0(r1.noi))+card('Cap Rate',P(m.cap))+card('Loan Payment Monthly',$0(pmt),pmtS)+card('DSCR Yr 1',X2(r1.dsP?r1.noi/r1.dsP:null),'',r1.dsP&&r1.noi/r1.dsP<1.2?'neg':'pos')+card('Cash Flow Monthly',$0(r1.cfm),$0(r1.cf)+'/yr',sg(r1.cf))+card('Cash on Cash Yr 1',P(r1.coc),'',sg(r1.coc))+card('LTV',P(m.price?m.loan0/m.price:null));
+ el('strip').innerHTML=card('Price',$k(m.price))+card('NOI Yr 1',$0(r1.noi))+card('Cap Rate',P(m.cap))+card('Loan Payment Monthly',$0(pmt),pmtS)+card('DSCR Yr 1',X2(r1.dsP?r1.noi/r1.dsP:null),'',r1.dsP&&r1.noi/r1.dsP<1.2?'neg':'pos')+card('Cash Flow Monthly',$0(r1.cfm),$0(r1.cf)+'/yr',sg(r1.cf))+card('Cash on Cash Yr 1',P(r1.coc),'',sg(r1.coc))+card('LTV',P(m.price?m.loan0/m.price:null))+card('Price Per Unit',m.ppu?$0(m.ppu):'—',num('units')?num('units')+' units':'');
  el('cvName').textContent=el('name').value||'Untitled Property';el('cvAddr').textContent=el('addr').value;
  el('cvK').innerHTML=card('Price',$k(m.price))+card('NOI Yr 1',$0(r1.noi))+card('Cap Rate',P(m.cap))+card('Cash on Cash Yr 1',P(r1.coc),'',sg(r1.coc))+card('DSCR Yr 1',X2(r1.dsP?r1.noi/r1.dsP:null))+card('LTV',P(m.price?m.loan0/m.price:null));
  const yrs=m.rows;const tot=(k,t)=>{const v=yrs.map(r=>r[k]).filter(x=>x!=null&&isFinite(x));return t==='sum'?v.reduce((a,b)=>a+b,0):t==='avg'&&v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
