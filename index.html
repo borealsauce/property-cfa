@@ -107,6 +107,7 @@ table.grid tr.b td{font-weight:700}table.grid tr.hl td{background:#e8b9231c!impo
 .box,.box label,.box .hrow>*{min-width:0}.box input,.box select{max-width:100%;box-sizing:border-box;min-width:0}
 .box .combo{display:flex;gap:6px;align-items:stretch;min-width:0;width:100%}.box .combo input{flex:1 1 0;width:auto;min-width:0}.box .combo select{flex:0 0 auto;width:auto}
 .boxes{grid-template-columns:repeat(2,minmax(0,1fr))}@media(min-width:1600px){.boxes{grid-template-columns:repeat(4,minmax(0,1fr))}}@media(max-width:900px){.boxes{grid-template-columns:minmax(0,1fr)}}
+.byact{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}.byact .pill{font-size:11px;padding:5px 10px}.byact .rnote{margin:0}
 </style>
 </head><body>
 <div class="top"><div class="wrap"><h1>Property CFA / OM</h1><div class="muted">Single-property cash flow analysis &amp; offering memorandum · updates live as you type</div></div></div>
@@ -137,7 +138,7 @@ table.grid tr.b td{font-weight:700}table.grid tr.hl td{background:#e8b9231c!impo
 <label>Starting Operating Expense ($/yr, optional)<input id="opx0" type="text" inputmode="decimal" placeholder="optional"></label>
 <label>Annual Expense Increase (%, optional)<input id="eg" type="number" step="any" placeholder="optional"></label>
 <label>Start year<input id="start" type="number" step="any"></label><label>Years shown<input id="hold" type="number" step="any"></label></div>
-<details id="byyear"><summary>Enter by year (optional — overrides the projection)</summary><input id="incy" type="hidden"><input id="opxy" type="hidden"><div id="bygrid" class="bygw"></div></details></div>
+<details id="byyear"><summary>Enter by year (optional — overrides the projection)</summary><input id="incy" type="hidden"><input id="opxy" type="hidden"><div id="bygrid" class="bygw"></div><div class="byact"><button type="button" class="pill" id="byclr" onclick="byClear()">Clear by-year amounts</button><button type="button" class="pill" id="byundo" onclick="byUndo()" style="display:none">Undo</button><span id="bymsg" class="rnote"></span></div></details></div>
 <div class="box"><h3>Original Loan</h3>
 <label>Debt type<select id="dtype"><option value="am">Amortizing</option><option value="io">Interest-only</option><option value="mx">Mixed (IO then amortizing)</option></select></label>
 <label>Interest (%)<input id="rate" type="number" step="any"></label><label id="lr2">Rate after IO (%)<input id="rate2" type="number" step="any"></label><label id="lio">IO period (yrs)<input id="ioy" type="number"></label><label id="lam">Amort (yrs)<input id="amy" type="number" step="any"></label><label>Term (yrs)<input id="term" type="number" step="any"></label>
@@ -382,6 +383,14 @@ function tab(t){document.querySelectorAll('#tabs .pill').forEach(b=>b.classList.
 go();
 
 document.addEventListener('input',e=>{if(e.target&&e.target.id==='hold')byGrid()});
+
+let byArm=0,byPrev=null,byT=null;
+function byMsg(t){el('bymsg').textContent=t}
+function byClear(){const b=el('byclr');if(!el('incy').value&&!el('opxy').value){byMsg('Nothing to clear.');return}
+ if(!byArm){byArm=1;b.textContent='Click again to confirm';clearTimeout(byT);byT=setTimeout(()=>{byArm=0;b.textContent='Clear by-year amounts'},4000);return}
+ byArm=0;clearTimeout(byT);b.textContent='Clear by-year amounts';byPrev={i:el('incy').value,o:el('opxy').value};el('incy').value='';el('opxy').value='';byGrid();calc();saveCur();
+ el('byundo').style.display='';byMsg('Cleared — projection uses Starting NOI and the annual increases.');byT=setTimeout(()=>{el('byundo').style.display='none';byMsg('');byPrev=null},15000)}
+function byUndo(){if(!byPrev)return;el('incy').value=byPrev.i;el('opxy').value=byPrev.o;byPrev=null;clearTimeout(byT);byGrid();calc();saveCur();el('byundo').style.display='none';byMsg('Restored.');setTimeout(()=>byMsg(''),3000)}
 
 </script><!--SORTABLE-START--><script>
 /* Shared sortable tables (Grok Bot trackers). Click any header: asc/desc toggle with ▲/▼.
