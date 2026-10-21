@@ -93,7 +93,7 @@ table.grid tr.b td{font-weight:700}table.grid tr.hl td{background:#e8b9231c!impo
 .combo{display:flex;gap:6px}.combo input{flex:1;min-width:0}.combo select{width:auto}
 #byyear{margin-top:4px}
 .ced{width:90px;padding:4px 6px;font-size:12px;text-align:right}.pr{display:none}
-.cn{color:#0b3d91;font:700 11px Inter;white-space:nowrap;text-shadow:0 0 3px #fff,0 0 3px #fff;transform:translate(8px,-6px)}
+.cn{pointer-events:none;color:#0b3d91;font:700 11px Inter;white-space:nowrap;text-shadow:0 0 3px #fff,0 0 3px #fff;transform:translate(8px,-6px)}
 @media print{.ced{display:none}.pr{display:inline}}
 </style>
 </head><body>
@@ -344,7 +344,7 @@ function renderLoc(){const g=demo&&demo.geo;if(!g){Object.values(layers).forEach
  ['map','map2','map3'].forEach(id=>{const m=mk(id);if(!m)return;const lg=layers[id];lg.clearLayers();
   L.circleMarker([g.lat,g.lon],{radius:8,color:'#050505',weight:2,fillColor:'#e8b923',fillOpacity:1}).bindTooltip(el('name').value||'Subject',{permanent:true,direction:'top',className:'lbl subj'}).addTo(lg);
   const rr=[1,3,5];rr.forEach(r=>{L.circle([g.lat,g.lon],{radius:r*1609.34,color:'#e8b923',weight:2,fill:false,dashArray:'6 4'}).addTo(lg);L.marker([g.lat+r/69.0,g.lon],{icon:L.divIcon({className:'rl',html:r+' mi'})}).addTo(lg)});
-  if(id==='map2'){compList().forEach(x=>{if(x.la==null)return;const tip=`<b>${esc(x.n)}</b><br>${esc(x.a||'')}<br>Lot rent: ${x.rent!=null?$0(x.rent)+'/mo':'—'}<br>Pads/Homes: ${x.pads??'—'}<br>${x.d!=null?x.d.toFixed(2)+' mi':''}`;L.circleMarker([x.la,x.lo],{radius:7,color:'#050505',weight:1.5,fillColor:'#60a5fa',fillOpacity:.95}).bindTooltip(tip,{direction:'top',className:'lbl'}).bindPopup(tip).addTo(lg);L.marker([x.la,x.lo],{icon:L.divIcon({className:'cn',html:esc(x.n),iconSize:null})}).addTo(lg)})}
+  if(id==='map2'){compList().forEach(x=>{if(x.la==null)return;const tip=`<b>${esc(x.n)}</b><br>${esc(x.a||'')}<br>Lot rent: ${x.rent!=null?$0(x.rent)+'/mo':'—'}<br>Pads/Homes: ${x.pads??'—'}<br>${x.d!=null?x.d.toFixed(2)+' mi':''}`;L.circleMarker([x.la,x.lo],{radius:7,color:'#050505',weight:1.5,fillColor:'#60a5fa',fillOpacity:.95}).bindTooltip(tip,{direction:'top',className:'lbl'}).bindPopup(tip).addTo(lg);L.marker([x.la,x.lo],{interactive:false,keyboard:false,icon:L.divIcon({className:'cn',html:esc(x.n),iconSize:null})}).addTo(lg)})}
   if(id==='map2'){const pts=compList().filter(x=>x.la!=null).map(x=>[x.la,x.lo]);pts.push([g.lat,g.lon]);if(pts.length>1)m.fitBounds(pts,{padding:[30,30]});else m.setView([g.lat,g.lon],12)}else m.setView([g.lat,g.lon],id==='map3'?12:11);setTimeout(()=>m.invalidateSize(),50)})}
 // ---- boot
 async function go(){try{DEF=await (await fetch('data.json',{cache:'no-store'})).json()}catch(e){DEF={props:[]}}
