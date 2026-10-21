@@ -117,7 +117,6 @@ table.grid tr.b td{font-weight:700}table.grid tr.hl td{background:#e8b9231c!impo
 <label id="lprice">Purchase Price ($)<input id="price" type="text" inputmode="decimal"></label><label id="lcap">Cap Rate target (%)<input id="capin" type="number" step="0.01"></label>
 <label>Down payment entry<select id="dpmode"><option value="ltv">LTV %</option><option value="usd">Down Payment $</option></select></label>
 <label id="lltv">LTV (%)<input id="ltv" type="number" step="any"></label><label id="ldown">Down Payment ($)<input id="down" type="text" inputmode="decimal"></label>
-<label>Annual Gross Income Increase<span class="combo"><input id="g" type="text" inputmode="decimal" placeholder="3"><select id="gmode"><option value="pct">%</option><option value="usd">$ / yr</option></select></span></label>
 
 <div class="ro"><span>Down Payment</span><b id="oDown"></b></div><div class="ro"><span>Loan Amount</span><b id="oLoan"></b></div><div class="ro"><span>Cap Rate</span><b id="oCap"></b></div><div class="ro"><span>Cash Invested</span><b id="oInv"></b></div></div>
 <div class="box"><h3>Loan Information</h3><div class="two"><div><div class="sub">Original Loan</div>
@@ -133,6 +132,7 @@ table.grid tr.b td{font-weight:700}table.grid tr.hl td{background:#e8b9231c!impo
 </div>
 <div class="box wide"><h3>Income</h3><div class="hrow inc1">
 <label class="prim">Starting NOI (Year 1) ($/yr)<input id="inc" type="text" inputmode="decimal" placeholder="e.g. 100,000"></label>
+<label class="prim">Annual Gross Income Increase<span class="combo"><input id="g" type="text" inputmode="decimal" placeholder="3"><select id="gmode"><option value="pct">%</option><option value="usd">$ / yr</option></select></span></label>
 <label>Starting Operating Expense ($/yr, optional)<input id="opx0" type="text" inputmode="decimal" placeholder="optional"></label>
 <label>Annual Expense Increase (%, optional)<input id="eg" type="number" step="any" placeholder="only if expense entered"></label>
 <label>Start year<input id="start" type="number" step="any"></label><label>Years shown<input id="hold" type="number" step="any"></label></div>
