@@ -334,7 +334,7 @@ async function runLoc(force){const a=el('addr2').value.trim()||el('addr').value.
  demo={geo:g};ret=null;renderLoc();el('lstat').textContent='Loading demographics and nearby parks…';
  const save=()=>{try{localStorage.setItem(key,JSON.stringify({demo,ret}))}catch(e){}};
  const pd=getDemo(g.lat,g.lon).then(v=>{demo={geo:g,...v}}).catch(e=>{demo={geo:g,err:'Census data unavailable: '+(e?.message||'request failed')}}).then(()=>{save();renderLoc();el('lstat').textContent='Located: '+g.label+' ('+g.src+')'+(ret?'':' · finding nearby parks…')});
- const pc=getComps(g.lat,g.lon).then(v=>{ret=v}).catch(()=>{ret={kind:'mhp',err:'Park lookup unavailable'}}).then(()=>{save();renderLoc()});
+ const pc=(comps&&comps.length?Promise.resolve(ret):getComps(g.lat,g.lon)).then(v=>{ret=v}).catch(()=>{ret={kind:'mhp',err:'Park lookup unavailable'}}).then(()=>{save();renderLoc()});
  await Promise.allSettled([pd,pc]);el('lstat').textContent='Located: '+g.label+' ('+g.src+')';calc()}
 function renderLoc(){const g=demo&&demo.geo;if(!g){Object.values(layers).forEach(l=>l&&l.clearLayers());const ls=el('lstat');if(ls)ls.textContent=''}
  if(demo&&demo.rings)table('tDemo',['Metric','1 Mile','3 Miles','5 Miles'],DM.map(([l,k,f])=>[tt(l),...demo.rings.map(r=>r[k]==null?'<td data-v="">unavailable</td>':td(r[k],f))]));else el('tDemo').innerHTML=`<div class="muted">${demo&&demo.err?esc(demo.err):'Look up an address to load demographics.'}</div>`;
