@@ -134,9 +134,9 @@ table.grid tr.b td{font-weight:700}table.grid tr.hl td{background:#e8b9231c!impo
 <div class="ro"><span>Loan Amount</span><b id="oLoan2"></b></div><div class="ro"><span>LTV</span><b id="oLtv"></b></div><div class="ro"><span>Loan Payment Monthly</span><b id="oPmt"></b></div><div class="ro s"><span></span><b id="oPmt2"></b></div><div class="ro"><span>Balloon at term</span><b id="oBal"></b></div></div>
 <div class="box"><h3>Refinance Loan <span id="rbadge" class="badge"></span></h3>
 <label>Refinance<select id="ron"><option value="off">Off</option><option value="on">On</option></select></label>
-<div id="rfields"><label>Refi at end of year<input id="ry" type="number" step="any"></label><label>Valuation cap (%)<input id="rcap" type="number" step="any" placeholder="blank = purchase cap"></label><label>Value based on<select id="rbasis"><option value="trail">Refi-year NOI</option><option value="fwd">Next-year NOI</option></select></label><label>Refi LTV of value (%)<input id="rltv" type="number" step="any"></label><label>Interest (%)<input id="rrate" type="number" step="any"></label>
-<label>Type<select id="rtype"><option value="am">Amortizing</option><option value="io">Interest-only</option></select></label><label>Amort (yrs)<input id="ramy" type="number" step="any"></label><label>Term (yrs)<input id="rterm" type="number" step="any"></label><label>Refi costs (% of loan)<input id="rcost" type="number" step="any"></label></div>
-<div class="ro"><span>Value at refi</span><b id="oRV"></b></div><div class="ro"><span>New loan</span><b id="oRL"></b></div><div class="ro"><span>LTV (of purchase price)</span><b id="oRLtv"></b></div><div class="ro"><span>Payoff of original loan</span><b id="oRPay"></b></div><div class="ro"><span>Net cash-out</span><b id="oRC"></b></div><div class="ro"><span>New Loan Payment Monthly</span><b id="oRP"></b></div></div>
+<div id="rfields"><label>Refi at end of year<input id="ry" type="number" step="any"></label><label>Interest (%)<input id="rrate" type="number" step="any"></label>
+<label>Type<select id="rtype"><option value="am">Amortizing</option><option value="io">Interest-only</option><option value="mx">Mixed (IO then amortizing)</option></select></label><label id="lrio">IO period (yrs)<input id="rioy" type="number" step="any"></label><label>Amort (yrs)<input id="ramy" type="number" step="any"></label><label>Term (yrs)<input id="rterm" type="number" step="any"></label></div>
+<div class="ro"><span>New loan (balance carried over)</span><b id="oRL"></b></div><div class="ro"><span>LTV (of purchase price)</span><b id="oRLtv"></b></div><div class="ro"><span>New Loan Payment Monthly</span><b id="oRP"></b></div></div>
 </div>
 <div class="muted neg" id="wn"></div>
 <div class="scroll" id="tGrid"></div>
@@ -162,7 +162,7 @@ const I=v=>v==null||!isFinite(v)?'—':Math.round(v).toLocaleString('en-US');
 const sg=v=>v>0?'pos':v<0?'neg':'';
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const el=id=>document.getElementById(id);
-const F=['ron','opx0','eg','rate2','name','addr','prep','rev','units','pmode','price','capin','dpmode','down','ltv','rate','amy','term','dtype','ioy','ry','rltv','rrate','ramy','rterm','rtype','rcap','rbasis','rcost','impr','life','fed','st','vac','res','opx','reimb','inc','gmode','g','incy','opxy','start','hold'];
+const F=['rioy','ron','opx0','eg','rate2','name','addr','prep','rev','units','pmode','price','capin','dpmode','down','ltv','rate','amy','term','dtype','ioy','ry','rrate','ramy','rterm','rtype','impr','life','fed','st','vac','res','opx','reimb','inc','gmode','g','incy','opxy','start','hold'];
 let DEF={},cur=null,demo=null,ret=null,comps=null;
 const pn=v=>{v=String(v??'').replace(/[$,\s]/g,'');return v===''||v==='-'?null:+v};
 const num=id=>pn(el(id)?.value);
@@ -186,16 +186,15 @@ function model(){
  const n1=L[0].noi;const price=el('pmode').value==='cap'?(num('capin')?n1/(num('capin')/100):0):(num('price')||0);
  const loan0=el('dpmode').value==='usd'?Math.max(0,price-(num('down')||0)):price*(num('ltv')||0)/100,down=price-loan0,inv=down;
  const rate=(num('rate')||0)/100,amy=num('amy')||0,term=num('term')||0,dt=el('dtype').value,ioy=num('ioy')||0,dso=null;
- const vcap=num('rcap')?num('rcap')/100:(price?n1/price:null),ry=el('ron').value==='on'?(num('ry')||0):0,warn=[];
+ const vcap=price?n1/price:null,ry=el('ron').value==='on'?(num('ry')||0):0,warn=[];
  if(dt!=='io'&&!amy&&!dso)warn.push('Amortization blank: modeled as interest-only.');
  let S={bal:loan0,r:rate,r2:dt==='mx'&&num('rate2')!=null?num('rate2')/100:null,type:dt,io:ioy,am:amy,k:0,pmt:dso!=null?dso:null},balloon=null,refi=null,rows=[];
  for(let y=1;y<=hold;y++){const l=L[y-1];if(S.type==='mx'&&S.r2!=null&&S.k>=S.io)S.r=S.r2;const int=S.bal*S.r;let ds;
   if(S.pmt!=null&&S.fix!==false)ds=S.pmt;else if(S.type==='io'||!S.am||(S.type==='mx'&&S.k<S.io))ds=int;else{if(S.ap==null){if(S.type==='mx'&&S.r2!=null)S.r=S.r2;S.ap=PMT(S.r,S.am,S.bal)}ds=S.ap}
   const pr=Math.max(0,Math.min(S.bal,ds-int));S.bal-=pr;S.k++;if(!refi&&term&&y===term)balloon=S.bal;
   const val=vcap?l.noi/vcap:null;let co=null;const balY=S.bal;
-  if(ry&&y===ry){const bn=el('rbasis').value==='fwd'&&L[y]?L[y].noi:l.noi,v=vcap?bn/vcap:0,nl=v*(num('rltv')||0)/100,cost=nl*(num('rcost')||0)/100;co=nl-cost-S.bal;
-   const ra=num('ramy')||0,rt=el('rtype').value,rr=(num('rrate')||0)/100;if(rt==='am'&&!ra)warn.push('Refi amortization blank: refi loan modeled as interest-only.');
-   refi={y,val:v,nl,cost,payoff:S.bal,co,rate:rr,pmt:rt==='am'&&ra?PMT(rr,ra,nl):nl*rr};S={bal:nl,r:rr,type:rt==='am'&&ra?'am':'io',io:0,am:ra,k:0,pmt:null}}
+  if(ry&&y===ry){const nl=S.bal,ra=num('ramy')||0,rt=el('rtype').value,rr=(num('rrate')||0)/100,rio=num('rioy')||0;if(rt!=='io'&&!ra)warn.push('Refi amortization blank: refi loan modeled as interest-only.');
+   refi={y,nl,payoff:nl,co:null,rate:rr,pmt:rt==='io'||!ra?nl*rr:rt==='mx'&&rio>0?nl*rr:PMT(rr,ra,nl),am:ra&&rt!=='io'?PMT(rr,ra,nl):null,type:rt};S={bal:nl,r:rr,type:!ra?'io':rt,io:rio,am:ra,k:0,pmt:null}}
   const cf=l.noi-ds;rows.push({y,yr:start+y-1,...l,ds:-ds,cf,cfm:cf/12,agc:y>1&&L[y-2].gi?l.gi/L[y-2].gi-1:null,dscr:ds?l.noi/ds:null,coc:inv?cf/inv:null,pr:-pr,bal:balY,cfp:cf+pr,tr:inv?(cf+pr)/inv:null,val,equity:val!=null?val-balY:null,ltv:val?balY/val:null,co,tot:cf+(co||0),toc:inv?(cf+(co||0))/inv:null,
    net:cf,noi:l.noi,dsP:ds,prP:pr})}
  const ioP=loan0*rate,amP=amy?(dt==='mx'?PMT(num('rate2')!=null?num('rate2')/100:rate,amy,loan0):PMT(rate,amy,loan0)):null;
@@ -216,7 +215,7 @@ function calc(){const m=M=model(),r1=m.rows[0]||{};
  const pmt=-r1.ds/12;const pmtS=d==='mx'?`IO ${$0(m.ioP/12)} → amortizing ${$0(m.amP/12)}`:'';
  const o=(id,v)=>{const e=el(id);if(e)e.textContent=v};
  o('oLoan',$0(m.loan0));o('oDown',$0(m.down));o('oCap',P(m.cap));o('oLtv',P(m.price?m.loan0/m.price:null));o('oInv',$0(m.inv));o('oPmt',$0(pmt));o('oPmt2',pmtS);o('oBal',m.balloon!=null?$0(m.balloon):'—');o('oPpu',m.ppu?$0(m.ppu):'—');
- o('oRL',m.refi?$0(m.refi.nl):'—');o('oRPay',m.refi?$0(m.refi.payoff):'—');o('oLoan2',$0(m.loan0));const on=el('ron').value==='on';el('rfields').style.display=on?'':'none';o('rbadge',on?'On':'Off');el('lam').style.display=d==='io'?'none':'';o('oRV',m.refi?$0(m.refi.val):'—');o('oRC',m.refi?$0(m.refi.co):'—');o('oRP',m.refi?$0(m.refi.pmt/12):'—');o('oRLtv',m.refi&&m.price?P(m.refi.nl/m.price):'—');
+ o('oRL',m.refi?$0(m.refi.nl):'—');el('lrio').style.display=el('rtype').value==='mx'?'':'none';o('oLoan2',$0(m.loan0));const on=el('ron').value==='on';el('rfields').style.display=on?'':'none';o('rbadge',on?'On':'Off');el('lam').style.display=d==='io'?'none':'';o('oRP',m.refi?$0(m.refi.pmt/12)+(m.refi.type==='mx'&&m.refi.am?' → '+$0(m.refi.am/12):''):'—');o('oRLtv',m.refi&&m.price?P(m.refi.nl/m.price):'—');
  o('oDep',$0(m.dep));o('oADep',m.adep!=null?$0(m.adep):'—');o('wn',m.warn.join(' '));
  el('strip').innerHTML=card('Price',$k(m.price))+card('NOI Yr 1',$0(r1.noi))+card('Cap Rate',P(m.cap))+card('Loan Payment Monthly',$0(pmt),pmtS)+card('DSCR Yr 1',X2(r1.dsP?r1.noi/r1.dsP:null),'',r1.dsP&&r1.noi/r1.dsP<1.2?'neg':'pos')+card('Cash Flow Monthly',$0(r1.cfm),$0(r1.cf)+'/yr',sg(r1.cf))+card('Cash on Cash Yr 1',P(r1.coc),'',sg(r1.coc))+card('LTV',P(m.price?m.loan0/m.price:null));
  el('cvName').textContent=el('name').value||'Untitled Property';el('cvAddr').textContent=el('addr').value;
@@ -276,14 +275,14 @@ function exportX(){const m=M,nm=el('name').value||'Property',v=id=>el(id).value,
   ['Loan Amount:',m.loan0,null,'Starting Operating Expense:',num('opx0'),null,'Amort:',num('amy'),null,'Amort:',num('ramy')],
   ['Cap Rate:',m.cap,null,'Annual Expense Increase:',num('eg')!=null?num('eg')/100:null,null,'Term:',num('term'),null,'Term:',num('rterm')],
   ['Cash Invested:',m.inv,null,null,null,null,'LTV:',m.price?m.loan0/m.price:null,null,'LTV:',m.refi&&m.price?m.refi.nl/m.price:null],
-  [null,null,null,null,null,null,'Debt Type:',el('dtype').selectedOptions[0].text,null,'Net Cash-Out:',m.refi?m.refi.co:null],
+  [null,null,null,null,null,null,'Debt Type:',el('dtype').selectedOptions[0].text,null,'Refi Year / IO Years:',m.refi?(m.refi.y+' / '+(num('rioy')||0)):null],
   [null,null,null,null,null,null,'Loan Payment Monthly:',yrs[0]?-yrs[0].ds/12:null,null,'New Loan Payment Monthly:',m.refi?m.refi.pmt/12:null],
   [],[null,...yrs.map(r=>r.yr),'TOTAL/'],['Tenant',...yrs.map(r=>'year '+r.y),'AVG']];
  const hr=A.length;GRID.forEach(([l,k,f,t])=>{const vals=yrs.map(r=>r[k]??null),ok=vals.filter(x=>x!=null);A.push([l+':',...vals,t==='sum'?ok.reduce((a,b)=>a+b,0):t==='avg'&&ok.length?ok.reduce((a,b)=>a+b,0)/ok.length:null])});
  const ws=XLSX.utils.aoa_to_sheet(A);const pc=new Set(['Cash on Cash Return','Total Return on Invest.','LTV']);
  GRID.forEach(([l],i)=>{for(let c=1;c<=yrs.length+1;c++){const cl=ws[XLSX.utils.encode_cell({r:hr+i,c})];if(cl&&cl.t==='n')cl.z=l==='DSCR'?'0.00"x"':l==='% Change'?'+0.0%;[Red]-0.0%':pc.has(l)?'0.00%':'$#,##0;[Red]-$#,##0'}});
  const fz=(r,c,z)=>{const cl=ws[XLSX.utils.encode_cell({r,c})];if(cl&&cl.t==='n')cl.z=z};
- [[10,1],[11,1],[12,1],[14,1],[10,4],[12,4],[10,7],[10,10],[7,1],[15,10],[16,7],[16,10]].forEach(([r,c])=>fz(r,c,'$#,##0'));if(el('gmode').value==='usd')fz(11,4,'$#,##0');else fz(11,4,'0.00%');
+ [[10,1],[11,1],[12,1],[14,1],[10,4],[12,4],[10,7],[10,10],[7,1],[16,7],[16,10]].forEach(([r,c])=>fz(r,c,'$#,##0'));if(el('gmode').value==='usd')fz(11,4,'$#,##0');else fz(11,4,'0.00%');
  [[13,1],[13,4],[11,7],[14,7],[11,10],[14,10]].forEach(([r,c])=>fz(r,c,'0.00%'));
  ws['!cols']=[{wch:28},...yrs.map(()=>({wch:13})),{wch:14}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Cash Flow Analysis');
  if(demo&&demo.rings)XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Metric','1 Mile','3 Miles','5 Miles'],...DM.map(([l,k])=>[l,...demo.rings.map(r=>r[k]??null)]),['Source',demo.src]]),'Demographics');
