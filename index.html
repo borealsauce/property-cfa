@@ -101,6 +101,9 @@ table.grid tr.b td{font-weight:700}table.grid tr.hl td{background:#e8b9231c!impo
 @media(max-width:1200px){.strip{grid-template-columns:repeat(3,minmax(0,1fr))}.strip .card .v{font-size:22px}}
 @media(max-width:600px){.strip{grid-template-columns:repeat(2,minmax(0,1fr))}.strip .card:last-child{grid-column:1/-1}}
 .rnote{font-size:11.5px;margin:-2px 0 8px;font-weight:600}
+.bygw{overflow-x:auto;margin-top:8px}.byg{border-collapse:collapse;font-size:12px}.byg th{color:var(--gold,#d4af37);font-weight:600;padding:4px 6px;white-space:nowrap;text-align:left}.byg td{padding:3px}.byg input.byc{width:96px;text-align:right;padding:5px 6px}
+.boxes>*,.box{min-width:0}.bygw{max-width:100%}
+#byyear{min-width:0;max-width:100%}
 </style>
 </head><body>
 <div class="top"><div class="wrap"><h1>Property CFA / OM</h1><div class="muted">Single-property cash flow analysis &amp; offering memorandum · updates live as you type</div></div></div>
@@ -131,7 +134,7 @@ table.grid tr.b td{font-weight:700}table.grid tr.hl td{background:#e8b9231c!impo
 <label>Starting Operating Expense ($/yr, optional)<input id="opx0" type="text" inputmode="decimal" placeholder="optional"></label>
 <label>Annual Expense Increase (%, optional)<input id="eg" type="number" step="any" placeholder="only if expense entered"></label>
 <label>Start year<input id="start" type="number" step="any"></label><label>Years shown<input id="hold" type="number" step="any"></label></div>
-<details id="byyear"><summary>Enter by year (optional — overrides the projection)</summary><div class="hrow" style="margin-top:8px"><label>Gross income by year (separate with ;)<input id="incy" type="text"></label><label>Operating expense by year (separate with ;)<input id="opxy" type="text"></label></div></details></div>
+<details id="byyear"><summary>Enter by year (optional — overrides the projection)</summary><input id="incy" type="hidden"><input id="opxy" type="hidden"><div id="bygrid" class="bygw"></div></details></div>
 <div class="box"><h3>Original Loan</h3>
 <label>Debt type<select id="dtype"><option value="am">Amortizing</option><option value="io">Interest-only</option><option value="mx">Mixed (IO then amortizing)</option></select></label>
 <label>Interest (%)<input id="rate" type="number" step="any"></label><label id="lr2">Rate after IO (%)<input id="rate2" type="number" step="any"></label><label id="lio">IO period (yrs)<input id="ioy" type="number"></label><label id="lam">Amort (yrs)<input id="amy" type="number" step="any"></label><label>Term (yrs)<input id="term" type="number" step="any"></label>
@@ -172,13 +175,19 @@ const pn=v=>{v=String(v??'').replace(/[$,\s]/g,'');return v===''||v==='-'?null:+
 const num=id=>pn(el(id)?.value);
 const MONEY=['price','down','inc','opx0'],MLIST=['incy','opxy'];
 const fmtM=v=>{const n=pn(v);return n==null||!isFinite(n)?v:(n<0?'-':'')+Math.abs(n).toLocaleString('en-US',{maximumFractionDigits:2})};
-function fmtField(k){const e=el(k);if(!e||document.activeElement===e)return;if(MONEY.includes(k)||(k==='g'&&el('gmode').value==='usd'))e.value=e.value===''?'':fmtM(e.value);else if(MLIST.includes(k))e.value=lstv(e.value).map(fmtM).join('; ')}
+function fmtField(k){const e=el(k);if(!e||document.activeElement===e)return;if(MONEY.includes(k)||(k==='g'&&el('gmode').value==='usd'))e.value=e.value===''?'':fmtM(e.value);else if(MLIST.includes(k))e.value=normL(e.value)}
 const lstv=s=>String(s||'').split(/;|,\s+|\s+/).map(x=>x.trim()).filter(x=>x!=='').map(x=>x.replace(/[$,]/g,''));
-const lst=id=>lstv(el(id).value).map(Number);
+const lstb=s=>{s=String(s||'');if(!s.trim())return[];const parts=s.includes(';')?s.split(';'):lstv(s);return parts.map(x=>{x=String(x).replace(/[$,\s]/g,'');return x===''?NaN:Number(x)})};
+const lst=id=>lstb(el(id).value);
+const normL=s=>lstb(s).map(v=>isFinite(v)?String(v):'').join(';').replace(/;+$/,'');
+function byGrid(){const N=Math.max(1,num('hold')||10),I=lst('incy'),O=lst('opxy'),c=v=>isFinite(v)?fmtM(v):'';let h='<table class="byg"><tr><th></th>'+Array.from({length:N},(_,i)=>`<th>Year ${i+1}</th>`).join('')+'</tr>';[['incy','Gross Income',I],['opxy','Operating Expense',O]].forEach(([k,l,v])=>{h+=`<tr><th>${l}</th>`+Array.from({length:N},(_,i)=>`<td><input class="byc" inputmode="decimal" data-k="${k}" data-y="${i}" aria-label="${l} Year ${i+1}" value="${c(v[i])}"></td>`).join('')+'</tr>'});el('bygrid').innerHTML=h+'</table><div class="rnote">Blank years grow from the last entered value: income by the Annual Gross Income Increase, expense by the Annual Expense Increase.</div>'}
+function bySync(k){const v=[...document.querySelectorAll(`.byc[data-k="${k}"]`)].map(e=>e.value.replace(/[$,\s]/g,''));const old=lst(k);for(let i=v.length;i<old.length;i++)v.push(isFinite(old[i])?String(old[i]):'');el(k).value=v.join(';').replace(/;+$/,'')}
+document.addEventListener('input',e=>{if(e.target.classList&&e.target.classList.contains('byc')){bySync(e.target.dataset.k);calc()}});
+document.addEventListener('focusout',e=>{if(e.target.classList&&e.target.classList.contains('byc')){const x=e.target.value.replace(/[$,\s]/g,'');e.target.value=x===''||!isFinite(+x)?'':fmtM(x)}});
 function state(){const s={};F.forEach(k=>{if(el(k))s[k]=el(k).value});s.demo=demo;s.ret=ret;s.comps=comps;s._v=DEF.ver||0;return s}
 const MIG={noi:'inc',noiy:'incy'};
 function setState(s){s={...s};Object.entries(MIG).forEach(([o,n])=>{if(s[o]!=null&&s[n]==null)s[n]=s[o]});if(s.ltv==null&&s.dpmode==null)s.dpmode='ltv';
- F.forEach(k=>{if(el(k))el(k).value=s[k]??(el(k).tagName==='SELECT'?el(k).options[0].value:'')});el('addr2').value=s.addr||'';demo=s.demo||null;ret=s.ret&&s.ret.kind==='mhp'?s.ret:null;comps=s.comps||null;[...MONEY,...MLIST,'g'].forEach(fmtField);el('byyear').open=!!(el('incy').value||el('opxy').value);calc();renderLoc()}
+ F.forEach(k=>{if(el(k))el(k).value=s[k]??(el(k).tagName==='SELECT'?el(k).options[0].value:'')});el('addr2').value=s.addr||'';demo=s.demo||null;ret=s.ret&&s.ret.kind==='mhp'?s.ret:null;comps=s.comps||null;[...MONEY,...MLIST,'g'].forEach(fmtField);byGrid();el('byyear').open=!!(el('incy').value||el('opxy').value);calc();renderLoc()}
 function origBal(L0,r,dt,io,am,r2,n){let b=L0,ap=null,rt=r;for(let k=0;k<n;k++){if(dt==='mx'&&r2!=null&&k>=io)rt=r2;const int=b*rt;let ds;if(dt==='io'||!am||(dt==='mx'&&k<io))ds=int;else{if(ap==null)ap=PMT(rt,am,b);ds=ap}b-=Math.max(0,Math.min(b,ds-int))}return b}
 const PMT=(r,n,pv)=>n?(r?pv*r/(1-Math.pow(1+r,-n)):pv/n):pv*r;
 function model(){
@@ -186,12 +195,12 @@ function model(){
  const iv=lst('incy'),ov=lst('opxy'),g=num('g')||0,gm=el('gmode').value,gross=[];
  for(let y=0;y<hold;y++){gross.push(isFinite(iv[y])?iv[y]:y===0?(num('inc')||0)+(isFinite(ov[0])?ov[0]:(num('opx0')||0)):gm==='pct'?gross[y-1]*(1+g/100):gross[y-1]+g)}
  const vac=(num('vac')||0)/100,res=(num('res')||0)/100,opx=(num('opx')||0)/100,rb=(num('reimb')||0)/100;
- const o0=num('opx0'),eg=(num('eg')||0)/100,oc=[];for(let y=0;y<hold;y++)oc.push(o0==null?null:o0*Math.pow(1+eg,y));
+ const o0=num('opx0'),eg=(num('eg')||0)/100,oc=[];let lo=null;for(let y=0;y<hold;y++){if(isFinite(ov[y]))lo=ov[y];else if(lo!=null)lo=lo*(1+eg);oc.push(isFinite(ov[y])?ov[y]:lo!=null?lo:o0==null?null:o0*Math.pow(1+eg,y))}
  const L=gross.map((gi,y)=>{const v=-gi*vac,r=-gi*res,agi=gi+v+r,ox=-(isFinite(ov[y])?ov[y]:oc[y]!=null?oc[y]:gi*opx),re=-ox*rb;return {gi,v,r,agi,ox,re,noi:agi+ox+re}});
  const n1=L[0].noi;const price=el('pmode').value==='cap'?(num('capin')?n1/(num('capin')/100):0):(num('price')||0);
  const loan0=el('dpmode').value==='usd'?Math.max(0,price-(num('down')||0)):price*(num('ltv')||0)/100,down=price-loan0,inv=down;
  const rate=(num('rate')||0)/100,amy=num('amy')||0,term=num('term')||0,dt=el('dtype').value,ioy=num('ioy')||0,dso=null;
- const vcap=price?n1/price:null,ryv=term>0?term+1:null,ry=el('ron').value==='on'&&ryv?ryv:0,warn=[];
+ const vcap=price?n1/price:null,ryTerm=term>0?term:hold,ryv=ryTerm+1,ry=el('ron').value==='on'&&ryv?ryv:0,warn=[];
  if(dt!=='io'&&!amy&&!dso)warn.push('Amortization blank: modeled as interest-only.');
  let S={bal:loan0,r:rate,r2:dt==='mx'&&num('rate2')!=null?num('rate2')/100:null,type:dt,io:ioy,am:amy,k:0,pmt:dso!=null?dso:null},balloon=null,refi=null,rows=[];
  if(ry===1){const nl=S.bal,ra=num('ramy')||0,rt=el('rtype').value,rr=(num('rrate')||0)/100,rio=num('rioy')||0;refi={y:1,nl,payoff:nl,co:null,rate:rr,pmt:rt==='io'||!ra||(rt==='mx'&&rio>0)?nl*rr:PMT(rr,ra,nl),am:ra&&rt!=='io'?PMT(rr,ra,nl):null,type:rt};S={bal:nl,r:rr,type:!ra?'io':rt,io:rio,am:ra,k:0,pmt:null}}
@@ -203,7 +212,7 @@ function model(){
    refi={y:ry,nl,payoff:nl,co:null,rate:rr,pmt:rt==='io'||!ra?nl*rr:rt==='mx'&&rio>0?nl*rr:PMT(rr,ra,nl),am:ra&&rt!=='io'?PMT(rr,ra,nl):null,type:rt};S={bal:nl,r:rr,type:!ra?'io':rt,io:rio,am:ra,k:0,pmt:null}}
   const cf=l.noi-ds;rows.push({y,yr:start+y-1,...l,ds:-ds,cf,cfm:cf/12,agc:y>1&&L[y-2].gi?l.gi/L[y-2].gi-1:null,dscr:ds?l.noi/ds:null,coc:inv?cf/inv:null,pr:-pr,bal:balY,cfp:cf+pr,tr:inv?(cf+pr)/inv:null,val,equity:val!=null?val-balY:null,ltv:val?balY/val:null,co,tot:cf+(co||0),toc:inv?(cf+(co||0))/inv:null,
    net:cf,noi:l.noi,dsP:ds,prP:pr})}
- const rr0=(num('rrate')||0)/100,ra0=num('ramy')||0,rt0=el('rtype').value,rio0=num('rioy')||0,pnl=ryv?origBal(loan0,rate,dt,ioy,amy,num('rate2')!=null?num('rate2')/100:null,term):null;
+ const rr0=num('rrate')!=null?num('rrate')/100:(dt==='mx'&&num('rate2')!=null?num('rate2')/100:rate),ra0=num('ramy')||0,rt0=el('rtype').value,rio0=num('rioy')||0,pnl=ryv?origBal(loan0,rate,dt,ioy,amy,num('rate2')!=null?num('rate2')/100:null,ryTerm):null;
  const rp=pnl==null?null:{y:ryv,rate:rr0,nl:pnl,pmt:rt0==='io'||!ra0||(rt0==='mx'&&rio0>0)?pnl*rr0:PMT(rr0,ra0,pnl),am:ra0&&rt0!=='io'?PMT(rr0,ra0,pnl):null,type:rt0};
  const ioP=loan0*rate,amP=amy?(dt==='mx'?PMT(num('rate2')!=null?num('rate2')/100:rate,amy,loan0):PMT(rate,amy,loan0)):null;
  const dep=price*(num('impr')??0)/100,life=num('life')||0;
@@ -223,7 +232,7 @@ function calc(){const m=M=model(),r1=m.rows[0]||{};
  const pmt=-r1.ds/12;const pmtS=d==='mx'?`IO ${$0(m.ioP/12)} → amortizing ${$0(m.amP/12)}`:'';
  const o=(id,v)=>{const e=el(id);if(e)e.textContent=v};
  o('oLoan',$0(m.loan0));o('oDown',$0(m.down));o('oCap',P(m.cap));o('oLtv',P(m.price?m.loan0/m.price:null));o('oInv',$0(m.inv));o('oPmt',$0(pmt));o('oPmt2',pmtS);o('oBal',m.balloon!=null?$0(m.balloon):'—');o('oPpu',m.ppu?$0(m.ppu):'—');
- const R=m.refi||m.rp;o('oRL',R?$0(R.nl):'—');el('lrio').style.display=el('rtype').value==='mx'?'':'none';o('oLoan2',$0(m.loan0));const on=el('ron').value==='on';o('rbadge',on?'On':'Off');o('oRY',m.rp?`Refi after Year ${m.rp.y-1} (original term)`:'Enter the original loan term');o('rnote',!m.rp?'Refi year comes from the original loan term.':on?`Applied to the grid starting Year ${m.rp.y}.`:`Off: preview only, not applied to the grid.`);el('rnote').className='rnote '+(on?'pos':'muted');el('lam').style.display=d==='io'?'none':'';o('oRP',R&&num('rrate')==null?'Enter refi rate':R?$0(R.pmt/12)+(R.type==='mx'&&R.am?' → '+$0(R.am/12):''):'—');o('oRLtv',R&&m.price?P(R.nl/m.price):'—');
+ const R=m.refi||m.rp;o('oRL',R?$0(R.nl):'—');el('lrio').style.display=el('rtype').value==='mx'?'':'none';o('oLoan2',$0(m.loan0));const on=el('ron').value==='on';o('rbadge',on?'On':'Off');o('oRY',`Refi after Year ${m.rp.y-1} `+(num('term')>0?'(original term)':'(no term entered — end of hold)'));o('rnote',!m.rp?'Refi year comes from the original loan term.':on?`Applied to the grid starting Year ${m.rp.y}.`:`Off: preview only, not applied to the grid.`);el('rnote').className='rnote '+(on?'pos':'muted');el('lam').style.display=d==='io'?'none':'';o('oRP',R?$0(R.pmt/12)+(R.type==='mx'&&R.am?' → '+$0(R.am/12):''):'—');o('oRLtv',R&&m.price?P(R.nl/m.price):'—');
  o('oDep',$0(m.dep));o('oADep',m.adep!=null?$0(m.adep):'—');o('wn',m.warn.join(' '));
  el('strip').innerHTML=card('Price',$k(m.price))+card('NOI Yr 1',$0(r1.noi))+card('Cap Rate',P(m.cap))+card('Loan Payment Monthly',$0(pmt),pmtS)+card('DSCR Yr 1',X2(r1.dsP?r1.noi/r1.dsP:null),'',r1.dsP&&r1.noi/r1.dsP<1.2?'neg':'pos')+card('Cash Flow Monthly',$0(r1.cfm),$0(r1.cf)+'/yr',sg(r1.cf))+card('Cash on Cash Yr 1',P(r1.coc),'',sg(r1.coc))+card('LTV',P(m.price?m.loan0/m.price:null))+card('Price Per Unit',m.ppu?$0(m.ppu):'—',num('units')?num('units')+' units':'');
  el('cvName').textContent=el('name').value||'Untitled Property';el('cvAddr').textContent=el('addr').value;
@@ -292,7 +301,7 @@ function exportX(){const RX=M.refi||M.rp;const m=M,nm=el('name').value||'Propert
  const fz=(r,c,z)=>{const cl=ws[XLSX.utils.encode_cell({r,c})];if(cl&&cl.t==='n')cl.z=z};
  [[10,1],[11,1],[12,1],[14,1],[10,4],[12,4],[10,7],[10,10],[7,1],[16,7],[16,10]].forEach(([r,c])=>fz(r,c,'$#,##0'));if(el('gmode').value==='usd')fz(11,4,'$#,##0');else fz(11,4,'0.00%');
  [[13,1],[13,4],[11,7],[14,7],[11,10],[14,10]].forEach(([r,c])=>fz(r,c,'0.00%'));
- ws['!cols']=[{wch:28},...yrs.map(()=>({wch:13})),{wch:14}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Cash Flow Analysis');
+ ws['!cols']=[{wch:28},...yrs.map(()=>({wch:13})),{wch:14}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Cash Flow Analysis');{const N=Math.max(1,num('hold')||10),I=lst('incy'),O=lst('opxy'),ws2=XLSX.utils.aoa_to_sheet([['Entered by year',...Array.from({length:N},(_,i)=>'Year '+(i+1))],['Gross Income',...Array.from({length:N},(_,i)=>isFinite(I[i])?I[i]:null)],['Operating Expense',...Array.from({length:N},(_,i)=>isFinite(O[i])?O[i]:null)],[],['Blank years grow from the last entered value (income: Annual Gross Income Increase; expense: Annual Expense Increase).']]);Object.keys(ws2).forEach(c=>{const x=ws2[c];if(x&&x.t==='n')x.z='"$"#,##0'});ws2['!cols']=[{wch:20}];XLSX.utils.book_append_sheet(wb,ws2,'By Year Inputs')}
  if(demo&&demo.rings)XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Metric','1 Mile','3 Miles','5 Miles'],...DM.map(([l,k])=>[l,...demo.rings.map(r=>r[k]??null)]),['Source',demo.src]]),'Demographics');
  {const cl=compList();if(cl.length)XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Park','Address','Lot Rent/mo','Pads/Homes','Miles','Source'],...cl.map(x=>[x.n,x.a||'',x.rent??null,x.pads??null,x.d!=null?+x.d.toFixed(2):null,(x.urls||[x.url]).filter(Boolean).join(' | ')])]),'MHP Comps')}
  XLSX.writeFile(wb,nm.replace(/[^\w\- ]/g,'')+' CFA.xlsx')}
@@ -346,7 +355,7 @@ async function runLoc(force){const a=el('addr2').value.trim()||el('addr').value.
  const save=()=>{try{localStorage.setItem(key,JSON.stringify({demo,ret}))}catch(e){}};
  const pd=getDemo(g.lat,g.lon).then(v=>{demo={geo:g,...v}}).catch(e=>{demo={geo:g,err:'Census data unavailable: '+(e?.message||'request failed')}}).then(()=>{save();renderLoc();el('lstat').textContent='Located: '+g.label+' ('+g.src+')'+(ret?'':' · finding nearby parks…')});
  const pc=(comps&&comps.length?Promise.resolve(ret):getComps(g.lat,g.lon)).then(v=>{ret=v}).catch(()=>{ret={kind:'mhp',err:'Park lookup unavailable'}}).then(()=>{save();renderLoc()});
- await Promise.allSettled([pd,pc]);el('lstat').textContent='Located: '+g.label+' ('+g.src+')';calc()}
+ await Promise.allSettled([pd,pc]);el('lstat').textContent='Located: '+g.label+' ('+g.src+')';byGrid();calc()}
 function renderLoc(){const g=demo&&demo.geo;if(!g){Object.values(layers).forEach(l=>l&&l.clearLayers());const ls=el('lstat');if(ls)ls.textContent=''}
  if(demo&&demo.rings)table('tDemo',['Metric','1 Mile','3 Miles','5 Miles'],DM.map(([l,k,f])=>[tt(l),...demo.rings.map(r=>r[k]==null?'<td data-v="">unavailable</td>':td(r[k],f))]));else el('tDemo').innerHTML=`<div class="muted">${demo&&demo.err?esc(demo.err):'Look up an address to load demographics.'}</div>`;
  el('demoSrc').innerHTML=demo&&demo.rings?'Source: '+esc(demo.src)+'<br>* Ring value = household/population-weighted average of tract medians. ** Estimated from household income brackets. Per-capita income and daytime population aren\'t in the free tract layers, so they show unavailable.':'';
@@ -368,6 +377,8 @@ async function go(){try{DEF=await (await fetch('data.json',{cache:'no-store'})).
  setState(first);tab('A');if(first.addr&&!(first.demo&&first.demo.rings))runLoc(false)}
 function tab(t){document.querySelectorAll('#tabs .pill').forEach(b=>b.classList.toggle('on',b.dataset.t===t));document.querySelectorAll('section[data-s]').forEach(s=>s.style.display=s.dataset.s===t?'':'none');setTimeout(()=>{Object.values(maps).forEach(m=>m.invalidateSize());if(demo&&demo.geo)renderLoc()},60)}
 go();
+
+document.addEventListener('input',e=>{if(e.target&&e.target.id==='hold')byGrid()});
 
 </script><!--SORTABLE-START--><script>
 /* Shared sortable tables (Grok Bot trackers). Click any header: asc/desc toggle with ▲/▼.
