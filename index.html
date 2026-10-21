@@ -78,7 +78,7 @@ details{margin-top:8px;color:var(--muted)}summary{cursor:pointer;color:var(--gol
 .ttl{border:0;padding:0;margin:0 0 10px;font-size:24px;text-align:center}
 .hrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-bottom:10px}
 .hrow label,.box label{display:flex;flex-direction:column;gap:4px;font:600 10.5px Inter;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
-.boxes{display:grid;grid-template-columns:1fr 2fr 1fr 1fr;gap:12px;margin:8px 0 12px}@media(max-width:1100px){.boxes{grid-template-columns:1fr 1fr}}@media(max-width:640px){.boxes{grid-template-columns:1fr}}
+.boxes{display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;margin:8px 0 12px}@media(max-width:1100px){.boxes{grid-template-columns:1fr 1fr}}@media(max-width:640px){.boxes{grid-template-columns:1fr}}
 .box{background:#1a1a1a;border:1px solid var(--gb);border-radius:.8rem;padding:12px}.box.wide{margin-bottom:12px}
 .box h3{margin:-12px -12px 10px;padding:8px 12px;background:linear-gradient(180deg,#f5c518,#e8b923);color:#050505;font:700 12px Inter;letter-spacing:.12em;text-transform:uppercase;border-radius:.8rem .8rem 0 0;text-align:center}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.sub{font:700 11px Inter;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin:4px 0 8px;border-bottom:1px solid var(--gb);padding-bottom:4px}
@@ -88,13 +88,14 @@ details{margin-top:8px;color:var(--muted)}summary{cursor:pointer;color:var(--gol
 table.grid th{font-size:10px;padding:6px 7px}table.grid td{padding:5px 7px;font-size:12.5px}.yy{color:var(--muted);font-weight:500;text-transform:none}
 table.grid tr.b td{font-weight:700}table.grid tr.hl td{background:#e8b9231c!important;font-weight:800;border-top:1px solid var(--gb)}table.grid tr.hl td:first-child{color:var(--gold)}
 @media print{.sheet,.box{background:#fff!important;border-color:#c9a227!important}.box h3{background:#e8b923!important}.box input,.box select,.hrow input,.hrow select{border:0;background:#fff!important;color:#111;padding:0}.ro b{color:#5a4500!important}
- section[data-s="A"]{page-break-after:always}table.grid td,table.grid th{font-size:8px;padding:2px 3px}.boxes{grid-template-columns:1fr 2fr 1fr 1fr}}
+ section[data-s="A"]{page-break-after:always}table.grid td,table.grid th{font-size:8px;padding:2px 3px}.boxes{grid-template-columns:1fr 1fr 2fr}}
 .inc1 label.prim{color:var(--gold);font-size:11.5px}.inc1 label.prim input{border-color:var(--gold);font-size:15px;font-weight:700}
 .combo{display:flex;gap:6px}.combo input{flex:1;min-width:0}.combo select{width:auto}
 #byyear{margin-top:4px}
 .ced{width:90px;padding:4px 6px;font-size:12px;text-align:right}.pr{display:none}
 .cn{pointer-events:none;color:#0b3d91;font:700 11px Inter;white-space:nowrap;text-shadow:0 0 3px #fff,0 0 3px #fff;transform:translate(8px,-6px)}
 @media print{.ced{display:none}.pr{display:inline}}
+.incbox .hrow{grid-template-columns:1fr}
 </style>
 </head><body>
 <div class="top"><div class="wrap"><h1>Property CFA / OM</h1><div class="muted">Single-property cash flow analysis &amp; offering memorandum · updates live as you type</div></div></div>
@@ -119,6 +120,13 @@ table.grid tr.b td{font-weight:700}table.grid tr.hl td{background:#e8b9231c!impo
 <label id="lltv">LTV (%)<input id="ltv" type="number" step="any"></label><label id="ldown">Down Payment ($)<input id="down" type="text" inputmode="decimal"></label>
 
 <div class="ro"><span>Down Payment</span><b id="oDown"></b></div><div class="ro"><span>Loan Amount</span><b id="oLoan"></b></div><div class="ro"><span>Cap Rate</span><b id="oCap"></b></div><div class="ro"><span>Cash Invested</span><b id="oInv"></b></div></div>
+<div class="box incbox"><h3>Income</h3><div class="hrow inc1">
+<label class="prim">Starting NOI (Year 1) ($/yr)<input id="inc" type="text" inputmode="decimal" placeholder="e.g. 100,000"></label>
+<label class="prim">Annual Gross Income Increase<span class="combo"><input id="g" type="text" inputmode="decimal" placeholder="3"><select id="gmode"><option value="pct">%</option><option value="usd">$ / yr</option></select></span></label>
+<label>Starting Operating Expense ($/yr, optional)<input id="opx0" type="text" inputmode="decimal" placeholder="optional"></label>
+<label>Annual Expense Increase (%, optional)<input id="eg" type="number" step="any" placeholder="only if expense entered"></label>
+<label>Start year<input id="start" type="number" step="any"></label><label>Years shown<input id="hold" type="number" step="any"></label></div>
+<details id="byyear"><summary>Enter by year (optional — overrides the projection)</summary><div class="hrow" style="margin-top:8px"><label>Gross income by year (separate with ;)<input id="incy" type="text"></label><label>Operating expense by year (separate with ;)<input id="opxy" type="text"></label></div></details></div>
 <div class="box"><h3>Loan Information</h3><div class="two"><div><div class="sub">Original Loan</div>
 <label>Debt type<select id="dtype"><option value="am">Amortizing</option><option value="io">Interest-only</option><option value="mx">Mixed (IO then amortizing)</option></select></label>
 <label>Interest (%)<input id="rate" type="number" step="any" placeholder=""></label><label>Amort (yrs)<input id="amy" type="number" step="any" placeholder=""></label><label id="lr2">Rate after IO (%)<input id="rate2" type="number" step="any"></label><label id="lio">IO period (yrs)<input id="ioy" type="number"></label><label>Term (yrs)<input id="term" type="number" step="any" placeholder=""></label><label>Debt service override ($/yr)<input id="dso" type="text" inputmode="decimal" step="any" placeholder="optional"></label>
@@ -127,16 +135,7 @@ table.grid tr.b td{font-weight:700}table.grid tr.hl td{background:#e8b9231c!impo
 <label>Type<select id="rtype"><option value="am">Amortizing</option><option value="io">Interest-only</option></select></label><label>Amort (yrs)<input id="ramy" type="number" step="any" placeholder=""></label><label>Term (yrs)<input id="rterm" type="number" step="any" placeholder=""></label>
 <label>Valuation cap (%)<input id="rcap" type="number" step="any" placeholder="blank = purchase cap"></label><label>Value based on<select id="rbasis"><option value="trail">Refi-year NOI</option><option value="fwd">Next-year NOI</option></select></label><label>Refi costs (% of loan)<input id="rcost" type="number" step="any" placeholder=""></label>
 <div class="ro"><span>Value at refi</span><b id="oRV"></b></div><div class="ro"><span>Loan Amount</span><b id="oRL"></b></div><div class="ro"><span>LTV (of purchase price)</span><b id="oRLtv"></b></div><div class="ro"><span>Net cash-out</span><b id="oRC"></b></div><div class="ro"><span>Loan Payment Monthly</span><b id="oRP"></b></div></div></div></div>
-<div class="box"><h3>Depreciation</h3><label>Improvement Ratio (%)<input id="impr" type="number" step="any" placeholder=""></label><div class="ro"><span>Depreciable Basis</span><b id="oDep"></b></div><label>Useful Life (yrs)<input id="life" type="number" step="any" placeholder=""></label><div class="ro"><span>Annual Depreciation</span><b id="oADep"></b></div></div>
-<div class="box"><h3>Tax Assumptions</h3><label>Federal Tax Rate (%)<input id="fed" type="number" step="any" placeholder=""></label><label>State Tax Rate (%)<input id="st" type="number" step="any" placeholder=""></label><div class="sub">Expenses</div><label>Vacancy (% of gross)<input id="vac" type="number" step="any" placeholder=""></label><label>Reserve (% of gross)<input id="res" type="number" step="any" placeholder=""></label><label>Operating Expenses (% of gross)<input id="opx" type="number" step="any" placeholder=""></label><label>Oper. Exp. Reimbursed (% of opex)<input id="reimb" type="number" step="any" placeholder=""></label></div>
 </div>
-<div class="box wide"><h3>Income</h3><div class="hrow inc1">
-<label class="prim">Starting NOI (Year 1) ($/yr)<input id="inc" type="text" inputmode="decimal" placeholder="e.g. 100,000"></label>
-<label class="prim">Annual Gross Income Increase<span class="combo"><input id="g" type="text" inputmode="decimal" placeholder="3"><select id="gmode"><option value="pct">%</option><option value="usd">$ / yr</option></select></span></label>
-<label>Starting Operating Expense ($/yr, optional)<input id="opx0" type="text" inputmode="decimal" placeholder="optional"></label>
-<label>Annual Expense Increase (%, optional)<input id="eg" type="number" step="any" placeholder="only if expense entered"></label>
-<label>Start year<input id="start" type="number" step="any"></label><label>Years shown<input id="hold" type="number" step="any"></label></div>
-<details id="byyear"><summary>Enter by year (optional — overrides the projection)</summary><div class="hrow" style="margin-top:8px"><label>Gross income by year (separate with ;)<input id="incy" type="text"></label><label>Operating expense by year (separate with ;)<input id="opxy" type="text"></label></div></details></div>
 <div class="muted neg" id="wn"></div>
 <div class="scroll" id="tGrid"></div>
 <h2>Net Cash Flow &amp; Cash on Cash</h2><div class="chartbox" id="cNet"></div>
@@ -204,7 +203,7 @@ function card(l,v,s,c){return `<div class="card"><div class="l">${l}</div><div c
 function table(id,head,rows,foot){el(id).innerHTML='<table><thead><tr>'+head.map((x,i)=>`<th${i?'':' class="t"'}>${x}</th>`).join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr'+(r.cls?` class="${r.cls}"`:'')+'>'+r.join('')+'</tr>').join('')+'</tbody>'+(foot?'<tfoot><tr class="ft">'+foot.join('')+'</tr></tfoot>':'')+'</table>'}
 const td=(v,f,c)=>v==null||!isFinite(v)?'<td data-v="">—</td>':`<td data-v="${v}" class="${c?sg(v):''}">${f(v)}</td>`;
 const tt=s=>`<td class="t">${esc(s)}</td>`;
-const GRID=[['Gross Income','gi',$0,'sum','b'],['% Change','agc',PS,'avg'],['Vacancy','v',$0,'sum'],['Reserves','r',$0,'sum'],['Operating Expense','ox',$0,'sum'],['Oper. Exp. Reimbursed','re',$0,'sum'],['Net Operating Income','noi',$0,'sum','hl'],['Debt Service','ds',$0,'sum'],
+const GRID=[['Gross Income','gi',$0,'sum','b'],['% Change','agc',PS,'avg'],['Operating Expense','ox',$0,'sum'],['Net Operating Income','noi',$0,'sum','hl'],['Debt Service','ds',$0,'sum'],
  ['Principal Reduction','pr',$0,'sum'],['Year End Loan Balance','bal',$0,''],['Cash Flow + Prin. Reduc.','cfp',$0,'sum','b'],['Total Return on Invest.','tr',P,'avg','hl'],
  ['Property Value (at cap)','val',$0,''],['Equity','equity',$0,''],['LTV','ltv',P,''],['Cash Flow (Monthly)','cfm',$0,'sum','b'],['Cash Flow (Annual)','cf',$0,'sum','hl'],['DSCR','dscr',X2,'avg','b'],['Cash on Cash Return','coc',P,'avg','hl']];
 let M;
@@ -269,18 +268,19 @@ function emailIt(){const m=M,r=m.rows[0]||{},n=el('name').value||'Property';cons
 // ---- export (mirrors template layout)
 function exportX(){const m=M,nm=el('name').value||'Property',v=id=>el(id).value,yrs=m.rows;
  const A=[['Cash Flow Analysis'],[],['Prepared For:',v('prep')],['Last Revision:',v('rev')],[],['Properties:',nm],['Address:',v('addr')],['Price Per Unit',m.ppu],[],
-  ['Property Information:',null,null,'Loan Information:',null,null,'Refinance Loan:',null,null,'Depreciation:',null,null,'Tax Assumptions / Expenses:'],
-  ['Purchase Price:',m.price,null,'Loan Amount:',m.loan0,null,'Loan Amount:',m.refi?m.refi.nl:null,null,'Improvement Ratio:',(num('impr')??0)/100,null,'Federal Tax Rate:',(num('fed')||0)/100],
-  ['Down Payment:',m.down,null,'Interest:',(num('rate')||0)/100,null,'Interest:',m.refi?m.refi.rate:null,null,'Depreciable Basis:',m.dep,null,'State Tax Rate:',(num('st')||0)/100],
-  ['Loan Amount:',m.loan0,null,'Amort:',num('amy'),null,'Amort:',num('ramy'),null,'Useful Life:',num('life'),null,'Vacancy:',(num('vac')||0)/100],
-  ['Cap Rate:',m.cap,null,'Term:',num('term'),null,'Term:',num('rterm'),null,'Annual Depreciation:',m.adep,null,'Reserve:',(num('res')||0)/100],
-  ['',null,null,'LTV:',m.price?m.loan0/m.price:null,null,'LTV:',m.refi&&m.price?m.refi.nl/m.price:null,null,null,null,null,'Operating Expenses:',(num('opx')||0)/100],
+  ['Property Information:',null,null,'Income:',null,null,'Loan Information:',null,null,'Refinance Loan:'],
+  ['Purchase Price:',m.price,null,'Starting NOI (Year 1):',num('inc'),null,'Loan Amount:',m.loan0,null,'Loan Amount:',m.refi?m.refi.nl:null],
+  ['Down Payment:',m.down,null,'Annual Gross Income Increase:',el('gmode').value==='pct'?(num('g')||0)/100:num('g'),null,'Interest:',(num('rate')||0)/100,null,'Interest:',m.refi?m.refi.rate:null],
+  ['Loan Amount:',m.loan0,null,'Starting Operating Expense:',num('opx0'),null,'Amort:',num('amy'),null,'Amort:',num('ramy')],
+  ['Cap Rate:',m.cap,null,'Annual Expense Increase:',num('eg')!=null?num('eg')/100:null,null,'Term:',num('term'),null,'Term:',num('rterm')],
+  ['Cash Invested:',m.inv,null,null,null,null,'LTV:',m.price?m.loan0/m.price:null,null,'LTV:',m.refi&&m.price?m.refi.nl/m.price:null],
   [],[null,...yrs.map(r=>r.yr),'TOTAL/'],['Tenant',...yrs.map(r=>'year '+r.y),'AVG']];
  const hr=A.length;GRID.forEach(([l,k,f,t])=>{const vals=yrs.map(r=>r[k]??null),ok=vals.filter(x=>x!=null);A.push([l+':',...vals,t==='sum'?ok.reduce((a,b)=>a+b,0):t==='avg'&&ok.length?ok.reduce((a,b)=>a+b,0)/ok.length:null])});
  const ws=XLSX.utils.aoa_to_sheet(A);const pc=new Set(['Cash on Cash Return','Total Return on Invest.','LTV']);
  GRID.forEach(([l],i)=>{for(let c=1;c<=yrs.length+1;c++){const cl=ws[XLSX.utils.encode_cell({r:hr+i,c})];if(cl&&cl.t==='n')cl.z=l==='DSCR'?'0.00"x"':l==='% Change'?'+0.0%;[Red]-0.0%':pc.has(l)?'0.00%':'$#,##0;[Red]-$#,##0'}});
- [[10,1],[11,1],[12,1],[13,1],[10,4],[10,7],[13,10],[14,1],[14,4],[7,1]].forEach(([r,c])=>{const cl=ws[XLSX.utils.encode_cell({r,c})];if(cl&&cl.t==='n')cl.z='$#,##0'});
- [[13,1],[11,4],[14,4],[11,7],[14,7],[10,10],[10,13],[11,13],[12,13],[13,13],[14,13]].forEach(([r,c])=>{const cl=ws[XLSX.utils.encode_cell({r,c})];if(cl&&cl.t==='n')cl.z='0.00%'});
+ const fz=(r,c,z)=>{const cl=ws[XLSX.utils.encode_cell({r,c})];if(cl&&cl.t==='n')cl.z=z};
+ [[10,1],[11,1],[12,1],[14,1],[10,4],[12,4],[10,7],[10,10],[7,1]].forEach(([r,c])=>fz(r,c,'$#,##0'));if(el('gmode').value==='usd')fz(11,4,'$#,##0');else fz(11,4,'0.00%');
+ [[13,1],[13,4],[11,7],[14,7],[11,10],[14,10]].forEach(([r,c])=>fz(r,c,'0.00%'));
  ws['!cols']=[{wch:28},...yrs.map(()=>({wch:13})),{wch:14}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Cash Flow Analysis');
  if(demo&&demo.rings)XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Metric','1 Mile','3 Miles','5 Miles'],...DM.map(([l,k])=>[l,...demo.rings.map(r=>r[k]??null)]),['Source',demo.src]]),'Demographics');
  {const cl=compList();if(cl.length)XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Park','Address','Lot Rent/mo','Pads/Homes','Miles','Source'],...cl.map(x=>[x.n,x.a||'',x.rent??null,x.pads??null,x.d!=null?+x.d.toFixed(2):null,(x.urls||[x.url]).filter(Boolean).join(' | ')])]),'MHP Comps')}
