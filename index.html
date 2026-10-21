@@ -117,7 +117,8 @@ table.grid tr.b td{font-weight:700}table.grid tr.hl td{background:#e8b9231c!impo
 <label id="lprice">Purchase Price ($)<input id="price" type="text" inputmode="decimal"></label><label id="lcap">Cap Rate target (%)<input id="capin" type="number" step="0.01"></label>
 <label>Down payment entry<select id="dpmode"><option value="ltv">LTV %</option><option value="usd">Down Payment $</option></select></label>
 <label id="lltv">LTV (%)<input id="ltv" type="number" step="any"></label><label id="ldown">Down Payment ($)<input id="down" type="text" inputmode="decimal"></label>
-<label>Closing / Reserves / CapEx ($)<input id="cc" type="text" inputmode="decimal" step="any" placeholder=""></label>
+<label>Annual Gross Income Increase<span class="combo"><input id="g" type="text" inputmode="decimal" placeholder="3"><select id="gmode"><option value="pct">%</option><option value="usd">$ / yr</option></select></span></label>
+
 <div class="ro"><span>Down Payment</span><b id="oDown"></b></div><div class="ro"><span>Loan Amount</span><b id="oLoan"></b></div><div class="ro"><span>Cap Rate</span><b id="oCap"></b></div><div class="ro"><span>Cash Invested</span><b id="oInv"></b></div></div>
 <div class="box"><h3>Loan Information</h3><div class="two"><div><div class="sub">Original Loan</div>
 <label>Debt type<select id="dtype"><option value="am">Amortizing</option><option value="io">Interest-only</option><option value="mx">Mixed (IO then amortizing)</option></select></label>
@@ -132,7 +133,6 @@ table.grid tr.b td{font-weight:700}table.grid tr.hl td{background:#e8b9231c!impo
 </div>
 <div class="box wide"><h3>Income</h3><div class="hrow inc1">
 <label class="prim">Starting NOI (Year 1) ($/yr)<input id="inc" type="text" inputmode="decimal" placeholder="e.g. 100,000"></label>
-<label class="prim">Annual Gross Income Increase<span class="combo"><input id="g" type="text" inputmode="decimal" placeholder="3"><select id="gmode"><option value="pct">%</option><option value="usd">$ / yr</option></select></span></label>
 <label>Starting Operating Expense ($/yr, optional)<input id="opx0" type="text" inputmode="decimal" placeholder="optional"></label>
 <label>Annual Expense Increase (%, optional)<input id="eg" type="number" step="any" placeholder="only if expense entered"></label>
 <label>Start year<input id="start" type="number" step="any"></label><label>Years shown<input id="hold" type="number" step="any"></label></div>
@@ -161,11 +161,11 @@ const I=v=>v==null||!isFinite(v)?'—':Math.round(v).toLocaleString('en-US');
 const sg=v=>v>0?'pos':v<0?'neg':'';
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const el=id=>document.getElementById(id);
-const F=['opx0','eg','rate2','name','addr','prep','rev','units','pmode','price','capin','dpmode','down','ltv','cc','rate','amy','term','dtype','ioy','dso','ry','rltv','rrate','ramy','rterm','rtype','rcap','rbasis','rcost','impr','life','fed','st','vac','res','opx','reimb','inc','gmode','g','incy','opxy','start','hold'];
+const F=['opx0','eg','rate2','name','addr','prep','rev','units','pmode','price','capin','dpmode','down','ltv','rate','amy','term','dtype','ioy','dso','ry','rltv','rrate','ramy','rterm','rtype','rcap','rbasis','rcost','impr','life','fed','st','vac','res','opx','reimb','inc','gmode','g','incy','opxy','start','hold'];
 let DEF={},cur=null,demo=null,ret=null,comps=null;
 const pn=v=>{v=String(v??'').replace(/[$,\s]/g,'');return v===''||v==='-'?null:+v};
 const num=id=>pn(el(id)?.value);
-const MONEY=['price','down','cc','dso','inc','opx0'],MLIST=['incy','opxy'];
+const MONEY=['price','down','dso','inc','opx0'],MLIST=['incy','opxy'];
 const fmtM=v=>{const n=pn(v);return n==null||!isFinite(n)?v:(n<0?'-':'')+Math.abs(n).toLocaleString('en-US',{maximumFractionDigits:2})};
 function fmtField(k){const e=el(k);if(!e||document.activeElement===e)return;if(MONEY.includes(k)||(k==='g'&&el('gmode').value==='usd'))e.value=e.value===''?'':fmtM(e.value);else if(MLIST.includes(k))e.value=lstv(e.value).map(fmtM).join('; ')}
 const lstv=s=>String(s||'').split(/;|,\s+|\s+/).map(x=>x.trim()).filter(x=>x!=='').map(x=>x.replace(/[$,]/g,''));
@@ -183,7 +183,7 @@ function model(){
  const o0=num('opx0'),eg=(num('eg')||0)/100,oc=[];for(let y=0;y<hold;y++)oc.push(o0==null?null:o0*Math.pow(1+eg,y));
  const L=gross.map((gi,y)=>{const v=-gi*vac,r=-gi*res,agi=gi+v+r,ox=-(isFinite(ov[y])?ov[y]:oc[y]!=null?oc[y]:gi*opx),re=-ox*rb;return {gi,v,r,agi,ox,re,noi:agi+ox+re}});
  const n1=L[0].noi;const price=el('pmode').value==='cap'?(num('capin')?n1/(num('capin')/100):0):(num('price')||0);
- const loan0=el('dpmode').value==='usd'?Math.max(0,price-(num('down')||0)):price*(num('ltv')||0)/100,down=price-loan0,inv=down+(num('cc')||0);
+ const loan0=el('dpmode').value==='usd'?Math.max(0,price-(num('down')||0)):price*(num('ltv')||0)/100,down=price-loan0,inv=down;
  const rate=(num('rate')||0)/100,amy=num('amy')||0,term=num('term')||0,dt=el('dtype').value,ioy=num('ioy')||0,dso=num('dso');
  const vcap=num('rcap')?num('rcap')/100:(price?n1/price:null),ry=num('ry')||0,warn=[];
  if(dt!=='io'&&!amy&&!dso)warn.push('Amortization blank: modeled as interest-only.');
@@ -274,7 +274,7 @@ function exportX(){const m=M,nm=el('name').value||'Property',v=id=>el(id).value,
   ['Down Payment:',m.down,null,'Interest:',(num('rate')||0)/100,null,'Interest:',m.refi?m.refi.rate:null,null,'Depreciable Basis:',m.dep,null,'State Tax Rate:',(num('st')||0)/100],
   ['Loan Amount:',m.loan0,null,'Amort:',num('amy'),null,'Amort:',num('ramy'),null,'Useful Life:',num('life'),null,'Vacancy:',(num('vac')||0)/100],
   ['Cap Rate:',m.cap,null,'Term:',num('term'),null,'Term:',num('rterm'),null,'Annual Depreciation:',m.adep,null,'Reserve:',(num('res')||0)/100],
-  ['Closing Costs:',num('cc'),null,'LTV:',m.price?m.loan0/m.price:null,null,'LTV:',m.refi&&m.price?m.refi.nl/m.price:null,null,null,null,null,'Operating Expenses:',(num('opx')||0)/100],
+  ['',null,null,'LTV:',m.price?m.loan0/m.price:null,null,'LTV:',m.refi&&m.price?m.refi.nl/m.price:null,null,null,null,null,'Operating Expenses:',(num('opx')||0)/100],
   [],[null,...yrs.map(r=>r.yr),'TOTAL/'],['Tenant',...yrs.map(r=>'year '+r.y),'AVG']];
  const hr=A.length;GRID.forEach(([l,k,f,t])=>{const vals=yrs.map(r=>r[k]??null),ok=vals.filter(x=>x!=null);A.push([l+':',...vals,t==='sum'?ok.reduce((a,b)=>a+b,0):t==='avg'&&ok.length?ok.reduce((a,b)=>a+b,0)/ok.length:null])});
  const ws=XLSX.utils.aoa_to_sheet(A);const pc=new Set(['Cash on Cash Return','Total Return on Invest.','LTV']);
