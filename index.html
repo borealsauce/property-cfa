@@ -94,7 +94,7 @@ table.grid tr.b td{font-weight:700}table.grid tr.hl td{background:#e8b9231c!impo
 <div class="top"><div class="wrap"><h1>Property CFA / OM</h1><div class="muted">Single-property cash flow analysis &amp; offering memorandum · updates live as you type</div></div></div>
 <div class="wrap" id="app" style="display:none">
 <div class="bar2 noprint">
- <select id="saved"></select><button class="pill" onclick="loadSel()">Load</button><button class="pill" onclick="saveCur()">Save</button><button class="pill" onclick="newProp()">New</button><button class="pill" onclick="delSel()">Delete</button>
+ <select id="saved"></select><button class="pill" onclick="loadSel()">Load</button><button class="pill" onclick="saveCur()">Save</button><button class="pill" onclick="newProp()">+ Add new</button><button class="pill" onclick="delSel()">Delete</button>
  <button class="pill" onclick="exportX()">Export .xlsx</button><button class="pill" onclick="emailIt()">Email</button><button class="pill" onclick="printOM()">Print / PDF</button>
 </div>
 <div class="cards strip" id="strip"></div>
@@ -214,7 +214,7 @@ function calc(){const m=M=model(),r1=m.rows[0]||{};
  netChart('cNet',m.rows,m.refi?m.refi.y:null);netChart('cNet2',m.rows,m.refi?m.refi.y:null);
  chart('c1',m.rows,[['NOI','noi','#e8b923'],['Debt Service','dsP','#ff2d3a'],['Cash Flow','cf','#22c55e']],[['Cash on Cash','coc',P],['Refi Cash-Out','co',$0]]);
  chart('c2',m.rows,[['Value','val','#e8b923'],['Loan Balance','bal','#ff2d3a'],['Equity','equity','#22c55e']],[['LTV','ltv',P],['Principal Reduction','prP',$0]]);
- try{localStorage.setItem('pcfa_last',JSON.stringify(state()))}catch(e){}}
+ if(cur!=='new')try{localStorage.setItem('pcfa_last',JSON.stringify(state()))}catch(e){}autoSaveNew()}
 const sum=(a,k)=>a.reduce((s,x)=>s+(x[k]||0),0);
 function chart(id,rows,ser,extra){const W=660,H=260,pl=84,pb=26,n=rows.length;let mx=0,mn=0;rows.forEach(r=>ser.forEach(s=>{const v=r[s[1]]||0;mx=Math.max(mx,v);mn=Math.min(mn,v)}));if(mx===mn)mx=1;
  const y=v=>10+(mx-v)/(mx-mn)*(H-pb-10),gw=(W-pl-10)/n,bw=gw*.8/ser.length;let s=`<svg viewBox="0 0 ${W} ${H}">`;
@@ -238,11 +238,20 @@ function netChart(id,rows,refiY){const W=780,H=300,pl=84,pr=48,pb=26,pt=14,n=row
   h.addEventListener('mousemove',show);h.addEventListener('touchstart',show,{passive:true});h.addEventListener('mouseleave',()=>el('ctip').style.display='none')})}
 // ---- saves
 const store=()=>{try{return JSON.parse(localStorage.getItem('pcfa_props')||'{}')}catch(e){return {}}};
-function fillSaved(sel){const s=store();el('saved').innerHTML=Object.keys(s).map(k=>`<option ${k===sel?'selected':''}>${esc(k)}</option>`).join('')}
+function fillSaved(sel){const s=store();el('saved').innerHTML=Object.keys(s).map(k=>`<option value="${esc(k)}" ${k===sel?'selected':''}>${esc(k)}</option>`).join('')+`<option value="__new" ${sel==='__new'?'selected':''}>+ Add new</option>`}
 function saveCur(){const s=store(),st=state(),k=st.name||'Untitled';s[k]=st;localStorage.setItem('pcfa_props',JSON.stringify(s));cur=k;fillSaved(k)}
-function loadSel(){const k=el('saved').value,s=store()[k];if(s){cur=k;setState(s)}}
+function loadSel(){const k=el('saved').value;if(k==='__new'){newProp();return}const s=store()[k];if(s){cur=k;setState(s)}}
 function delSel(){const k=el('saved').value;if(!k||!confirm('Delete '+k+' from this browser?'))return;const s=store();delete s[k];localStorage.setItem('pcfa_props',JSON.stringify(s));fillSaved()}
-function newProp(){cur='new';setState({pmode:'price',dpmode:'ltv',gmode:'pct',hold:15,dtype:'am',rtype:'am',rbasis:'trail',life:'39.5',impr:'80',start:String(new Date().getFullYear())})}
+let newKey=null,nameT=null;
+function newProp(){cur='new';newKey=null;try{localStorage.removeItem('pcfa_last')}catch(e){}
+ setState({pmode:'price',dpmode:'ltv',gmode:'pct',dtype:'am',rtype:'am',rbasis:'trail',ry:'0',hold:'10'});fillSaved('__new');tab('A');
+ const n=el('name');n.focus();try{n.scrollIntoView({block:'center'})}catch(e){}}
+function onName(){if(cur!=='new'&&!newKey)return;clearTimeout(nameT);nameT=setTimeout(()=>{let nm=el('name').value.trim();const s=store();
+ if(!nm){if(newKey){delete s[newKey];localStorage.setItem('pcfa_props',JSON.stringify(s));newKey=null;cur='new';fillSaved('__new')}return}
+ if(newKey&&newKey!==nm)delete s[newKey];let k=nm,i=2;while(s[k]&&k!==newKey){k=nm+' ('+i+++')'}
+ s[k]=state();localStorage.setItem('pcfa_props',JSON.stringify(s));newKey=k;cur=k;fillSaved(k)},500)}
+function autoSaveNew(){if(!newKey||cur!==newKey)return;const s=store();if(!s[newKey])return;s[newKey]=state();localStorage.setItem('pcfa_props',JSON.stringify(s))}
+function onPick(){const v=el('saved').value;if(v==='__new')newProp();else{newKey=null;loadSel()}}
 function emailIt(){const m=M,r=m.rows[0]||{},n=el('name').value||'Property';const b=[`${n}${el('addr').value?' — '+el('addr').value:''}`,'',`Purchase Price: ${$0(m.price)}`,`Down Payment: ${$0(m.down)}`,`Loan Amount: ${$0(m.loan0)}`,`Cap Rate: ${P(m.cap)}`,`NOI Year 1: ${$0(r.noi)}`,`Loan Payment Monthly: ${$0(-r.ds/12)}`,`Cash Flow (Annual): ${$0(r.cf)}`,`Cash Flow (Monthly): ${$0(r.cfm)}`,`Cash on Cash Return Yr 1: ${P(r.coc)}`,`Total Return on Invest. Yr 1: ${P(r.tr)}`,'',location.href].join('\n');
  location.href='mailto:?subject='+encodeURIComponent('Cash Flow Analysis — '+n)+'&body='+encodeURIComponent(b)}
 // ---- export (mirrors template layout)
@@ -304,7 +313,7 @@ async function runLoc(force){const a=el('addr2').value.trim()||el('addr').value.
  const [d,r]=await Promise.allSettled([getDemo(g.lat,g.lon),getRet(g.lat,g.lon)]);
  demo={geo:g,...(d.status==='fulfilled'?d.value:{err:'Census data unavailable: '+(d.reason?.message||'request failed')})};ret=r.status==='fulfilled'?r.value:{err:'Retail data unavailable'};
  try{localStorage.setItem(key,JSON.stringify({demo,ret}))}catch(e){}el('lstat').textContent='Located: '+g.label+' ('+g.src+')';renderLoc();calc()}
-function renderLoc(){const g=demo&&demo.geo;
+function renderLoc(){const g=demo&&demo.geo;if(!g){Object.values(layers).forEach(l=>l&&l.clearLayers());const ls=el('lstat');if(ls)ls.textContent=''}
  if(demo&&demo.rings)table('tDemo',['Metric','1 Mile','3 Miles','5 Miles'],DM.map(([l,k,f])=>[tt(l),...demo.rings.map(r=>r[k]==null?'<td data-v="">unavailable</td>':td(r[k],f))]));else el('tDemo').innerHTML=`<div class="muted">${demo&&demo.err?esc(demo.err):'Look up an address to load demographics.'}</div>`;
  el('demoSrc').innerHTML=demo&&demo.rings?'Source: '+esc(demo.src)+'<br>* Ring value = household/population-weighted average of tract medians. ** Estimated from household income brackets. Per-capita income and daytime population aren\'t in the free tract layers, so they show unavailable.':'';
  if(ret&&ret.items){const top=ret.items.slice(0,200);table('tRet',['Name','Brand','Category','Miles'],top.map(x=>[tt(x.n),tt(x.b||''),tt(x.c),td(x.d,v=>v.toFixed(2))]));el('rstat').textContent=`${ret.items.length} places within 3 mi · ${ret.items.filter(x=>x.b).length} national brands highlighted · Source: ${ret.src}`}else{el('tRet').innerHTML='';el('rstat').textContent=ret&&ret.err?ret.err:''}
@@ -320,7 +329,7 @@ async function go(){try{DEF=await (await fetch('data.json',{cache:'no-store'})).
  const s=store(),ver=DEF.ver||0;let changed=false;(DEF.props||[]).forEach(p=>{if(!s[p.name]||(s[p.name]._v||0)<ver){s[p.name]={...p,_v:ver,demo:s[p.name]?.demo,ret:s[p.name]?.ret};changed=true}});if(changed)localStorage.setItem('pcfa_props',JSON.stringify(s));
  let last=null;try{last=JSON.parse(localStorage.getItem('pcfa_last')||'null')}catch(e){}if(last&&(last.inc==null||(last._v||0)<ver))last=null;
  const first=last||s[DEF.props[0].name];cur=first.name;fillSaved(first.name);
- document.querySelectorAll('#tabs .pill').forEach(b=>b.onclick=()=>tab(b.dataset.t));
+ document.querySelectorAll('#tabs .pill').forEach(b=>b.onclick=()=>tab(b.dataset.t));el('saved').addEventListener('change',onPick);el('name').addEventListener('input',onName);
  F.forEach(k=>{const e=el(k);if(e){e.addEventListener('input',calc);e.addEventListener('change',calc);e.addEventListener('blur',()=>{fmtField(k)})}});el('gmode').addEventListener('change',()=>{fmtField('g')});el('addr').addEventListener('change',()=>{el('addr2').value=el('addr').value});
  setState(first);tab('A');if(first.addr&&!(first.demo&&first.demo.rings))runLoc(false)}
 function tab(t){document.querySelectorAll('#tabs .pill').forEach(b=>b.classList.toggle('on',b.dataset.t===t));document.querySelectorAll('section[data-s]').forEach(s=>s.style.display=s.dataset.s===t?'':'none');setTimeout(()=>{Object.values(maps).forEach(m=>m.invalidateSize());if(demo&&demo.geo)renderLoc()},60)}
